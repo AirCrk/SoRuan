@@ -14,7 +14,7 @@ function createPrismaClient() {
     // 限制连接池大小，避免 Supabase 连接数耗尽
     const pool = new Pool({
         connectionString,
-        max: process.env.NODE_ENV === 'development' ? 5 : 10,
+        max: process.env.NODE_ENV === 'development' ? 2 : 10,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 5000,
     });
