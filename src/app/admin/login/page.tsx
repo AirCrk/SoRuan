@@ -9,8 +9,15 @@ export default function AdminLogin() {
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [captcha, setCaptcha] = useState('');
+    const [captchaUrl, setCaptchaUrl] = useState('/api/auth/captcha?t=0');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const refreshCaptcha = () => {
+        setCaptchaUrl(`/api/auth/captcha?t=${Date.now()}`);
+        setCaptcha('');
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -21,16 +28,19 @@ export default function AdminLogin() {
             const result = await signIn('credentials', {
                 email,
                 password,
+                captcha,
                 redirect: false,
             });
 
             if (result?.error) {
                 setError(result.error);
+                refreshCaptcha(); // 失败刷新验证码
             } else {
                 router.push('/admin');
             }
         } catch (err) {
             setError('登录失败，请重试');
+            refreshCaptcha();
         } finally {
             setLoading(false);
         }
@@ -90,6 +100,34 @@ export default function AdminLogin() {
                                     required
                                     className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                验证码
+                            </label>
+                            <div className="flex gap-3">
+                                <input
+                                    type="text"
+                                    value={captcha}
+                                    onChange={(e) => setCaptcha(e.target.value)}
+                                    placeholder="输入验证码"
+                                    required
+                                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
+                                />
+                                <div
+                                    className="w-28 h-[42px] bg-gray-100 rounded-lg overflow-hidden cursor-pointer border border-gray-200 flex-shrink-0"
+                                    onClick={refreshCaptcha}
+                                    title="点击刷新验证码"
+                                >
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={captchaUrl}
+                                        alt="验证码"
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
                             </div>
                         </div>
 
