@@ -30,6 +30,13 @@ interface BannerSlide {
   title?: string;
 }
 
+interface FriendLink {
+  id: string;
+  name: string;
+  url: string;
+  logo: string | null;
+}
+
 const platformIcons: Record<string, React.ReactNode> = {
   windows: <Monitor className="w-4 h-4" />,
   apple: <Apple className="w-4 h-4" />,
@@ -48,8 +55,9 @@ export default function HomePage() {
     site_name: 'BuySoft',
     site_logo: '',
   });
+  const [friendLinks, setFriendLinks] = useState<FriendLink[]>([]);
 
-  // Fetch site configuration and banners
+  // Fetch site configuration, banners and friend links
   useEffect(() => {
     fetch('/api/config')
       .then(res => res.json())
@@ -68,6 +76,16 @@ export default function HomePage() {
               console.error('Failed to parse banner slides:', e);
             }
           }
+        }
+      })
+      .catch(console.error);
+
+    // Fetch friend links
+    fetch('/api/friend-links')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setFriendLinks(data.data);
         }
       })
       .catch(console.error);
@@ -272,6 +290,33 @@ export default function HomePage() {
           </div>
         )}
       </main>
+
+      {/* 友情链接 */}
+      {friendLinks.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 py-8 border-t border-gray-100">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">友情链接</h3>
+          <div className="flex flex-wrap gap-x-8 gap-y-4">
+            {friendLinks.map((link) => (
+              <a
+                key={link.id}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-2"
+              >
+                {link.logo && (
+                  <img
+                    src={link.logo}
+                    alt={link.name}
+                    className="w-4 h-4 object-contain"
+                  />
+                )}
+                {link.name}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 页脚 */}
       <footer className="bg-white border-t border-gray-200 py-8 mt-12">

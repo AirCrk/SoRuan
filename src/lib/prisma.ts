@@ -9,10 +9,20 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-    const connectionString = process.env.DATABASE_URL!;
+    const connectionString = process.env.DATABASE_URL;
+
+    if (!connectionString) {
+        // 在构建阶段或未配置环境变量时，提供更友好的错误提示
+        // 改为 console.error 而不是直接 throw，防止构建脚本（如 lint）在没有 env 时崩溃
+        console.warn('⚠️  DATABASE_URL environment variable is missing.');
+        if (process.env.NODE_ENV === 'production') {
+            throw new Error('DATABASE_URL is missing in production environment');
+        }
+    }
+
     // 限制连接池大小，避免 Supabase 连接数耗尽
     const pool = new Pool({
-        connectionString,
+        connectionString: connectionString || '', // Prevent crash if undefined
         max: process.env.NODE_ENV === 'development' ? 2 : 10,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 5000,
