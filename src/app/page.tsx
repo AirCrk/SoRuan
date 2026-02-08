@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Search, ShoppingCart, Mail, Monitor, Apple, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import BannerCarousel from '@/components/BannerCarousel';
 
 interface Platform {
   id: string;
@@ -22,6 +23,13 @@ interface Product {
   platforms: Platform[];
 }
 
+interface BannerSlide {
+  id: string;
+  imageUrl: string;
+  linkUrl?: string;
+  title?: string;
+}
+
 const platformIcons: Record<string, React.ReactNode> = {
   windows: <Monitor className="w-4 h-4" />,
   apple: <Apple className="w-4 h-4" />,
@@ -35,12 +43,13 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('全部');
+  const [bannerSlides, setBannerSlides] = useState<BannerSlide[]>([]);
   const [siteConfig, setSiteConfig] = useState({
     site_name: 'BuySoft',
     site_logo: '',
   });
 
-  // Fetch site configuration
+  // Fetch site configuration and banners
   useEffect(() => {
     fetch('/api/config')
       .then(res => res.json())
@@ -50,6 +59,15 @@ export default function HomePage() {
             ...prev,
             ...data.data
           }));
+          // Parse banner slides from config
+          if (data.data.banner_slides) {
+            try {
+              const slides = JSON.parse(data.data.banner_slides);
+              setBannerSlides(slides);
+            } catch (e) {
+              console.error('Failed to parse banner slides:', e);
+            }
+          }
         }
       })
       .catch(console.error);
@@ -168,6 +186,13 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* 广告轮播 */}
+      {bannerSlides.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 pt-6">
+          <BannerCarousel slides={bannerSlides} autoPlayInterval={5000} />
+        </div>
+      )}
 
       {/* 商品列表 */}
       <main className="max-w-7xl mx-auto px-4 py-8">

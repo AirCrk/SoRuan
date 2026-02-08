@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import {
     Settings, LayoutDashboard, LogOut, Save, Loader2,
-    CloudCog, Users, Globe, Plus, Edit, Trash2, Eye, EyeOff, X, Store
+    CloudCog, Users, Globe, Plus, Edit, Trash2, Eye, EyeOff, X, Store, Image as ImageIcon, Upload, Link as LinkIcon
 } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -14,6 +15,13 @@ interface Admin {
     email: string;
     name: string | null;
     createdAt: string;
+}
+
+interface BannerSlide {
+    id: string;
+    imageUrl: string;
+    linkUrl: string;
+    title: string;
 }
 
 interface SettingsData {
@@ -26,7 +34,7 @@ export default function SettingsPage() {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
-    const [activeTab, setActiveTab] = useState<'oss' | 'site' | 'admins'>('oss');
+    const [activeTab, setActiveTab] = useState<'oss' | 'site' | 'banners' | 'admins'>('oss');
 
     // OSS 配置
     const [ossConfig, setOssConfig] = useState({
@@ -43,6 +51,18 @@ export default function SettingsPage() {
         site_description: '',
         site_logo: '',
     });
+
+    // 广告轮播图
+    const [bannerSlides, setBannerSlides] = useState<BannerSlide[]>([]);
+    const [showBannerModal, setShowBannerModal] = useState(false);
+    const [editingBanner, setEditingBanner] = useState<BannerSlide | null>(null);
+    const [bannerForm, setBannerForm] = useState({
+        imageUrl: '',
+        linkUrl: '',
+        title: '',
+    });
+    const [uploadingBanner, setUploadingBanner] = useState(false);
+    const bannerFileInputRef = useRef<HTMLInputElement>(null);
 
     // 管理员列表
     const [admins, setAdmins] = useState<Admin[]>([]);
@@ -86,6 +106,15 @@ export default function SettingsPage() {
                     site_description: settings.site_description || '',
                     site_logo: settings.site_logo || '',
                 });
+
+                if (settings.banner_slides) {
+                    try {
+                        setBannerSlides(JSON.parse(settings.banner_slides));
+                    } catch (e) {
+                        console.error('Failed to parse banner slides', e);
+                        setBannerSlides([]);
+                    }
+                }
 
                 setAdmins(adminList);
             }
@@ -136,6 +165,119 @@ export default function SettingsPage() {
         } finally {
             setSaving(false);
         }
+    };
+
+    // 保存 Banner 配置
+    const saveBannerConfig = async (newBanners: BannerSlide[]) => {
+        try {
+            const res = await fetch('/api/admin/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'update_site',
+                    banner_slides: JSON.stringify(newBanners)
+                }),
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error);
+            return true;
+        } catch (error) {
+            alert('保存 Banner 配置失败');
+            return false;
+        }
+    };
+
+    // 上传图片
+    const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploadingBanner(true);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'banners');
+
+        try {
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                setBannerForm(prev => ({ ...prev, imageUrl: data.url }));
+            } else {
+                alert('上传失败: ' + data.error);
+            }
+        } catch (error) {
+            alert('上传出错');
+        } finally {
+            setUploadingBanner(false);
+            if (bannerFileInputRef.current) {
+                bannerFileInputRef.current.value = '';
+            }
+        }
+    };
+
+    // 保存单个 Banner
+    const saveBanner = async () => {
+        if (!bannerForm.imageUrl) {
+            alert('请上传图片或输入图片地址');
+            return;
+        }
+
+        const newBanner: BannerSlide = {
+            id: editingBanner?.id || Date.now().toString(),
+            imageUrl: bannerForm.imageUrl,
+            linkUrl: bannerForm.linkUrl,
+            title: bannerForm.title,
+        };
+
+        let newBanners: BannerSlide[];
+        if (editingBanner) {
+            newBanners = bannerSlides.map(b => b.id === editingBanner.id ? newBanner : b);
+        } else {
+            newBanners = [...bannerSlides, newBanner];
+        }
+
+        setSaving(true);
+        const success = await saveBannerConfig(newBanners);
+        if (success) {
+            setBannerSlides(newBanners);
+            setShowBannerModal(false);
+            setBannerForm({ imageUrl: '', linkUrl: '', title: '' });
+            alert(editingBanner ? 'Banner 已更新' : 'Banner 已添加');
+        }
+        setSaving(false);
+    };
+
+    // 删除 Banner
+    const deleteBanner = async (id: string) => {
+        if (!confirm('确定删除该 Banner 吗？')) return;
+
+        const newBanners = bannerSlides.filter(b => b.id !== id);
+        setSaving(true);
+        const success = await saveBannerConfig(newBanners);
+        if (success) {
+            setBannerSlides(newBanners);
+        }
+        setSaving(false);
+    };
+
+    // 打开 Banner 模态框
+    const openBannerModal = (banner?: BannerSlide) => {
+        if (banner) {
+            setEditingBanner(banner);
+            setBannerForm({
+                imageUrl: banner.imageUrl,
+                linkUrl: banner.linkUrl || '',
+                title: banner.title || '',
+            });
+        } else {
+            setEditingBanner(null);
+            setBannerForm({ imageUrl: '', linkUrl: '', title: '' });
+        }
+        setShowBannerModal(true);
     };
 
     // 打开管理员弹窗
@@ -305,6 +447,16 @@ export default function SettingsPage() {
                             站点信息
                         </button>
                         <button
+                            onClick={() => setActiveTab('banners')}
+                            className={`flex items-center gap-2 px-6 py-4 font-medium border-b-2 transition-colors ${activeTab === 'banners'
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700'
+                                }`}
+                        >
+                            <ImageIcon className="w-5 h-5" />
+                            广告轮播图
+                        </button>
+                        <button
                             onClick={() => setActiveTab('admins')}
                             className={`flex items-center gap-2 px-6 py-4 font-medium border-b-2 transition-colors ${activeTab === 'admins'
                                 ? 'border-blue-600 text-blue-600'
@@ -458,6 +610,104 @@ export default function SettingsPage() {
                             </div>
                         )}
 
+                        {/* 广告轮播图 */}
+                        {activeTab === 'banners' && (
+                            <div>
+                                <div className="flex items-center justify-between mb-6">
+                                    <p className="text-gray-600">管理首页顶部的广告轮播图</p>
+                                    <button
+                                        onClick={() => openBannerModal()}
+                                        className="btn-primary flex items-center gap-2"
+                                    >
+                                        <Plus className="w-4 h-4" />
+                                        添加轮播图
+                                    </button>
+                                </div>
+
+                                <div className="grid gap-4">
+                                    {bannerSlides.map((banner, index) => (
+                                        <div
+                                            key={banner.id}
+                                            className="bg-white border border-gray-200 rounded-lg p-4 flex items-center gap-4"
+                                        >
+                                            <div className="relative w-32 h-16 rounded overflow-hidden bg-gray-100 flex-shrink-0">
+                                                <Image
+                                                    src={banner.imageUrl}
+                                                    alt={banner.title}
+                                                    fill
+                                                    className="object-cover"
+                                                />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="font-medium text-gray-900 truncate">
+                                                    {banner.title || '无标题'}
+                                                    <span className="ml-2 text-xs text-gray-400 font-normal">
+                                                        (排序: {index + 1})
+                                                    </span>
+                                                </h4>
+                                                <div className="flex items-center gap-1 text-sm text-gray-500 truncate mt-1">
+                                                    <LinkIcon className="w-3 h-3 flex-shrink-0" />
+                                                    {banner.linkUrl || '无链接'}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => openBannerModal(banner)}
+                                                    className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded"
+                                                    title="编辑"
+                                                >
+                                                    <Edit className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        const newBanners = [...bannerSlides];
+                                                        if (index > 0) {
+                                                            [newBanners[index - 1], newBanners[index]] = [newBanners[index], newBanners[index - 1]];
+                                                            setBannerSlides(newBanners);
+                                                            saveBannerConfig(newBanners);
+                                                        }
+                                                    }}
+                                                    disabled={index === 0}
+                                                    className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded disabled:opacity-30"
+                                                    title="上移"
+                                                >
+                                                    ↑
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        const newBanners = [...bannerSlides];
+                                                        if (index < newBanners.length - 1) {
+                                                            [newBanners[index + 1], newBanners[index]] = [newBanners[index], newBanners[index + 1]];
+                                                            setBannerSlides(newBanners);
+                                                            saveBannerConfig(newBanners);
+                                                        }
+                                                    }}
+                                                    disabled={index === bannerSlides.length - 1}
+                                                    className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded disabled:opacity-30"
+                                                    title="下移"
+                                                >
+                                                    ↓
+                                                </button>
+                                                <button
+                                                    onClick={() => deleteBanner(banner.id)}
+                                                    className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded"
+                                                    title="删除"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+
+                                    {bannerSlides.length === 0 && (
+                                        <div className="text-center py-10 text-gray-500 bg-gray-50 rounded-lg border border-dashed border-gray-300">
+                                            暂无轮播图，点击上方按钮添加
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
                         {/* 管理员账号 */}
                         {activeTab === 'admins' && (
                             <div>
@@ -597,6 +847,115 @@ export default function SettingsPage() {
                             >
                                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                                 {editingAdmin ? '保存修改' : '添加'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Banner 弹窗 */}
+            {showBannerModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-2xl">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-bold">
+                                {editingBanner ? '编辑轮播图' : '添加轮播图'}
+                            </h3>
+                            <button
+                                onClick={() => setShowBannerModal(false)}
+                                className="p-1 hover:bg-gray-100 rounded"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                    图片 <span className="text-red-500">*</span>
+                                </label>
+
+                                <div className="space-y-3">
+                                    {/* 预览 */}
+                                    {bannerForm.imageUrl && (
+                                        <div className="relative w-full h-32 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                                            <Image
+                                                src={bannerForm.imageUrl}
+                                                alt="Preview"
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={bannerForm.imageUrl}
+                                            onChange={(e) => setBannerForm(prev => ({ ...prev, imageUrl: e.target.value }))}
+                                            placeholder="输入图片 URL"
+                                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                        />
+                                        <button
+                                            onClick={() => bannerFileInputRef.current?.click()}
+                                            disabled={uploadingBanner}
+                                            className="px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg flex items-center gap-2 text-sm transition-colors whitespace-nowrap"
+                                        >
+                                            {uploadingBanner ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                                            上传
+                                        </button>
+                                        <input
+                                            ref={bannerFileInputRef}
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={handleBannerUpload}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-500">建议尺寸: 1200x400 (3:1)，支持 jpg, png, webp</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                    跳转链接
+                                </label>
+                                <input
+                                    type="text"
+                                    value={bannerForm.linkUrl}
+                                    onChange={(e) => setBannerForm(prev => ({ ...prev, linkUrl: e.target.value }))}
+                                    placeholder="https://example.com/..."
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                    标题/备注
+                                </label>
+                                <input
+                                    type="text"
+                                    value={bannerForm.title}
+                                    onChange={(e) => setBannerForm(prev => ({ ...prev, title: e.target.value }))}
+                                    placeholder="可选，仅用于后台展示"
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={() => setShowBannerModal(false)}
+                                className="flex-1 btn-secondary"
+                            >
+                                取消
+                            </button>
+                            <button
+                                onClick={saveBanner}
+                                disabled={saving || uploadingBanner}
+                                className="flex-1 btn-primary flex items-center justify-center gap-2"
+                            >
+                                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : (editingBanner ? '保存' : '添加')}
                             </button>
                         </div>
                     </div>
