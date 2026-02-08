@@ -25,9 +25,19 @@ export async function GET(request: NextRequest) {
             ];
         }
 
-        if (platform && platform !== 'all') {
+        const platformId = searchParams.get('platformId');
+
+        // ...
+
+        if (platformId && platformId !== 'all') {
+            // 如果提供了 platformId，优先按 ID 筛选
             where.platforms = {
-                some: { name: platform }
+                some: { id: platformId }
+            };
+        } else if (platform && platform !== 'all') {
+            // 否则按名称筛选（兼容旧逻辑）
+            where.platforms = {
+                some: { name: { contains: platform, mode: 'insensitive' } } // 模糊匹配更友好
             };
         }
 

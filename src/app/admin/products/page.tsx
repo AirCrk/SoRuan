@@ -3,8 +3,13 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Check, X, Edit, Trash2, Plus, Loader2 } from 'lucide-react';
+import { ArrowLeft, Check, X, Edit, Trash2, Plus, Loader2, Filter } from 'lucide-react';
 import Image from 'next/image';
+
+interface Platform {
+    id: string;
+    name: string;
+}
 
 interface Product {
     id: string;
@@ -15,26 +20,55 @@ interface Product {
     coverImage: string;
     isActive: boolean;
     channel: { name: string } | null;
+    platforms: Platform[];
 }
 
 export default function AdminProductsPage() {
     const router = useRouter();
     const [products, setProducts] = useState<Product[]>([]);
+    const [platforms, setPlatforms] = useState<Platform[]>([]);
+    const [selectedPlatform, setSelectedPlatform] = useState('');
     const [loading, setLoading] = useState(true);
 
+    // 获取平台列表
     useEffect(() => {
-        fetch('/api/admin/products')
+        fetch('/api/platforms')
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    setProducts(data.data);
-                } else {
-                    console.error(data.error);
+                    setPlatforms(data.data);
                 }
-            })
-            .catch(err => console.error(err))
-            .finally(() => setLoading(false));
+            });
     }, []);
+
+    // 获取商品列表
+    const fetchProducts = async () => {
+        setLoading(true);
+        try {
+            let url = '/api/admin/products';
+            const params = new URLSearchParams();
+            if (selectedPlatform) {
+                params.append('platformId', selectedPlatform);
+            }
+
+            const res = await fetch(`${url}?${params}`);
+            const data = await res.json();
+
+            if (data.success) {
+                setProducts(data.data);
+            } else {
+                console.error(data.error);
+            }
+        } catch (error) {
+            console.error('获取失败', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchProducts();
+    }, [selectedPlatform]);
 
     const handleDelete = async (id: string) => {
         if (!window.confirm('确定要删除这个商品吗？')) return;
@@ -54,14 +88,6 @@ export default function AdminProductsPage() {
         }
     };
 
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto space-y-6">
@@ -71,13 +97,27 @@ export default function AdminProductsPage() {
                         <h1 className="text-2xl font-bold text-gray-900">商品管理</h1>
                         <p className="text-gray-500 mt-1">管理系统中的所有软件商品</p>
                     </div>
-                    <Link
-                        href="/admin/products/new"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        <Plus className="w-5 h-5" />
-                        添加商品
-                    </Link>
+                    <div className="flex gap-4">
+                        <select
+                            value={selectedPlatform}
+                            onChange={(e) => setSelectedPlatform(e.target.value)}
+                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-700 min-w-[140px]"
+                        >
+                            <option value="">所有平台</option>
+                            {platforms.map((platform) => (
+                                <option key={platform.id} value={platform.id}>
+                                    {platform.name}
+                                </option>
+                            ))}
+                        </select>
+                        <Link
+                            href="/admin/products/new"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            <Plus className="w-5 h-5" />
+                            添加商品
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Table */}
@@ -89,77 +129,97 @@ export default function AdminProductsPage() {
                                     <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">商品信息</th>
                                     <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">价格</th>
                                     <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">渠道</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">平台</th>
                                     <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">状态</th>
                                     <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">操作</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
-                                {products.map((product) => (
-                                    <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
-                                                    {product.coverImage ? (
-                                                        <Image
-                                                            src={product.coverImage}
-                                                            alt={product.name}
-                                                            width={48}
-                                                            height={48}
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                                            P
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <div className="font-medium text-gray-900">{product.name}</div>
-                                                    <div className="text-sm text-gray-500 line-clamp-1 max-w-xs">{product.subtitle}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm">
-                                                <div className="font-medium text-gray-900">¥{Number(product.salePrice).toFixed(2)}</div>
-                                                <div className="text-gray-500 line-through text-xs">¥{Number(product.originalPrice).toFixed(2)}</div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {product.channel?.name || '-'}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.isActive
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-gray-100 text-gray-800'
-                                                }`}>
-                                                {product.isActive ? '已上架' : '已下架'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <div className="flex items-center justify-end gap-3">
-                                                <Link
-                                                    href={`/admin/products/${product.id}`}
-                                                    className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
-                                                >
-                                                    <Edit className="w-4 h-4" />
-                                                </Link>
-                                                <button
-                                                    onClick={() => handleDelete(product.id)}
-                                                    className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {products.length === 0 && (
+                                {loading ? (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
-                                            暂无商品，点击右上角添加
+                                        <td colSpan={6} className="px-6 py-24 text-center text-gray-500">
+                                            <div className="flex justify-center mb-4">
+                                                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                                            </div>
+                                            加载中...
                                         </td>
                                     </tr>
+                                ) : products.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="px-6 py-24 text-center text-gray-500">
+                                            暂无符合条件的商品
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    products.map((product) => (
+                                        <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                                                        {product.coverImage ? (
+                                                            <Image
+                                                                src={product.coverImage}
+                                                                alt={product.name}
+                                                                width={48}
+                                                                height={48}
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                                P
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-medium text-gray-900">{product.name}</div>
+                                                        <div className="text-sm text-gray-500 line-clamp-1 max-w-xs">{product.subtitle}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm">
+                                                    <div className="font-medium text-gray-900">¥{Number(product.salePrice).toFixed(2)}</div>
+                                                    <div className="text-gray-500 line-through text-xs">¥{Number(product.originalPrice).toFixed(2)}</div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                {product.channel?.name || '-'}
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500">
+                                                <div className="flex flex-wrap gap-1">
+                                                    {product.platforms?.map((p) => (
+                                                        <span key={p.id} className="px-2 py-0.5 bg-gray-100 rounded text-xs">
+                                                            {p.name}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${product.isActive
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : 'bg-gray-100 text-gray-800'
+                                                    }`}>
+                                                    {product.isActive ? '已上架' : '已下架'}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                <div className="flex items-center justify-end gap-3">
+                                                    <Link
+                                                        href={`/admin/products/${product.id}`}
+                                                        className="text-blue-600 hover:text-blue-900 p-1 hover:bg-blue-50 rounded"
+                                                    >
+                                                        <Edit className="w-4 h-4" />
+                                                    </Link>
+                                                    <button
+                                                        onClick={() => handleDelete(product.id)}
+                                                        className="text-red-600 hover:text-red-900 p-1 hover:bg-red-50 rounded"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
                                 )}
                             </tbody>
                         </table>

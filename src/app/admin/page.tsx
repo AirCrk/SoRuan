@@ -42,6 +42,8 @@ export default function AdminDashboard() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [platforms, setPlatforms] = useState<Platform[]>([]);
+    const [selectedPlatform, setSelectedPlatform] = useState('');
 
     // 检查登录状态
     useEffect(() => {
@@ -55,6 +57,7 @@ export default function AdminDashboard() {
         try {
             const params = new URLSearchParams({ admin: 'true' });
             if (searchQuery) params.append('search', searchQuery);
+            if (selectedPlatform) params.append('platformId', selectedPlatform);
 
             const res = await fetch(`/api/products?${params}`);
             const data = await res.json();
@@ -66,11 +69,20 @@ export default function AdminDashboard() {
         } finally {
             setLoading(false);
         }
-    }, [searchQuery]);
+    }, [searchQuery, selectedPlatform]);
 
     useEffect(() => {
         if (status === 'authenticated') {
             fetchProducts();
+
+            // 获取平台列表
+            fetch('/api/platforms')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        setPlatforms(data.data);
+                    }
+                });
         }
     }, [status, fetchProducts]);
 
@@ -201,6 +213,20 @@ export default function AdminDashboard() {
                             className="search-input pl-10"
                         />
                     </div>
+
+                    <select
+                        value={selectedPlatform}
+                        onChange={(e) => setSelectedPlatform(e.target.value)}
+                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-700 min-w-[140px]"
+                    >
+                        <option value="">所有平台</option>
+                        {platforms.map((platform) => (
+                            <option key={platform.id} value={platform.id}>
+                                {platform.name}
+                            </option>
+                        ))}
+                    </select>
+
                     <button
                         onClick={() => fetchProducts()}
                         className="p-2 text-gray-500 hover:text-gray-700"

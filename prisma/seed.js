@@ -29,10 +29,10 @@ async function main() {
     // 创建管理员账户
     const hashedPassword = await bcrypt.hash('HON123wellx', 10);
     await prisma.adminUser.upsert({
-        where: { email: 'aircrk@gmai.com' },
+        where: { email: 'aircrk@gmail.com' },
         update: {},
         create: {
-            email: 'aircrk@gmai.com',
+            email: 'aircrk@gmail.com',
             password: hashedPassword,
             name: 'Admin',
         },
