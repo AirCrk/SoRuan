@@ -126,7 +126,7 @@ export default function AdminLogin() {
                                     onChange={(e) => setCaptcha(e.target.value)}
                                     placeholder="输入验证码"
                                     required
-                                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
+                                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                                 <div
                                     className="w-28 h-[42px] bg-gray-100 rounded-lg overflow-hidden cursor-pointer border border-gray-200 flex-shrink-0"
