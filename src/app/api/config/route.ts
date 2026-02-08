@@ -12,7 +12,7 @@ export async function GET() {
         });
 
         const settings: Record<string, string> = {};
-        configs.forEach((config) => {
+        configs.forEach((config: { key: string; value: string }) => {
             settings[config.key] = config.value;
         });
 
