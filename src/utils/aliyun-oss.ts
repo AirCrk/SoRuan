@@ -3,6 +3,7 @@
  * 用于处理图片和文件上传到阿里云 OSS
  */
 
+// @ts-ignore - ali-oss types issue
 import OSS from 'ali-oss';
 
 // 创建 OSS 客户端实例
