@@ -912,7 +912,7 @@ export default function SettingsPage() {
                                             onChange={handleBannerUpload}
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-500">建议尺寸: 1200x400 (3:1)，支持 jpg, png, webp</p>
+                                    <p className="text-xs text-gray-500">建议尺寸: 1200x300 (4:1)，支持 jpg, png, webp</p>
                                 </div>
                             </div>
 

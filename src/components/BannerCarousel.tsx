@@ -53,7 +53,7 @@ export default function BannerCarousel({ slides, autoPlayInterval = 5000 }: Bann
     return (
         <div
             className="relative w-full overflow-hidden rounded-xl bg-gray-100"
-            style={{ aspectRatio: '21/9' }}
+            style={{ aspectRatio: '4/1' }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -118,8 +118,8 @@ export default function BannerCarousel({ slides, autoPlayInterval = 5000 }: Bann
                                 goToSlide(index);
                             }}
                             className={`w-2.5 h-2.5 rounded-full transition-all ${index === currentIndex
-                                    ? 'bg-white w-6'
-                                    : 'bg-white/50 hover:bg-white/75'
+                                ? 'bg-white w-6'
+                                : 'bg-white/50 hover:bg-white/75'
                                 }`}
                         />
                     ))}
