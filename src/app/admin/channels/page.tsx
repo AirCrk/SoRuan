@@ -3,10 +3,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
-    Settings, LayoutDashboard, LogOut, Plus, Edit, Trash2, X, Loader2, Store
+    Plus, Edit, Trash2, X, Loader2
 } from 'lucide-react';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import AdminSidebar from '@/components/AdminSidebar';
 
 interface Channel {
     id: string;
@@ -146,59 +147,10 @@ export default function ChannelsPage() {
     return (
         <div className="min-h-screen bg-gray-100 flex">
             {/* 侧边栏 */}
-            <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
-                <div className="p-6 border-b border-gray-200">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-                            <span className="text-white font-bold">B</span>
-                        </div>
-                        <div>
-                            <h1 className="font-bold text-gray-900">BuySoft</h1>
-                            <p className="text-xs text-gray-500">管理后台</p>
-                        </div>
-                    </div>
-                </div>
-
-                <nav className="flex-1 p-4 space-y-1">
-                    <Link
-                        href="/admin"
-                        className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg"
-                    >
-                        <LayoutDashboard className="w-5 h-5" />
-                        商品管理
-                    </Link>
-                    <Link
-                        href="/admin/channels"
-                        className="flex items-center gap-3 px-4 py-3 bg-blue-50 text-blue-600 rounded-lg font-medium"
-                    >
-                        <Store className="w-5 h-5" />
-                        渠道管理
-                    </Link>
-                    <Link
-                        href="/admin/settings"
-                        className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-lg"
-                    >
-                        <Settings className="w-5 h-5" />
-                        系统设置
-                    </Link>
-                </nav>
-
-                <div className="p-4 border-t border-gray-200">
-                    <div className="text-sm text-gray-500 mb-2">
-                        {session?.user?.email}
-                    </div>
-                    <button
-                        onClick={() => signOut({ callbackUrl: '/admin/login' })}
-                        className="flex items-center gap-2 text-gray-600 hover:text-red-600 text-sm"
-                    >
-                        <LogOut className="w-4 h-4" />
-                        退出登录
-                    </button>
-                </div>
-            </aside>
+            <AdminSidebar />
 
             {/* 主内容 */}
-            <main className="flex-1 p-8">
+            <main className="flex-1 ml-64 p-8">
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900">渠道管理</h2>
@@ -206,7 +158,7 @@ export default function ChannelsPage() {
                     </div>
                     <button
                         onClick={() => openModal()}
-                        className="btn-primary flex items-center gap-2"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
                     >
                         <Plus className="w-5 h-5" />
                         添加渠道
@@ -319,14 +271,14 @@ export default function ChannelsPage() {
                         <div className="flex gap-3 mt-6">
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="flex-1 btn-secondary"
+                                className="flex-1 px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
                             >
                                 取消
                             </button>
                             <button
                                 onClick={saveChannel}
                                 disabled={saving}
-                                className="flex-1 btn-primary flex items-center justify-center gap-2"
+                                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                             >
                                 {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                                 {editingChannel ? '保存修改' : '添加'}
