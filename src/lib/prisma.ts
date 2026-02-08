@@ -5,7 +5,7 @@ import { Pool } from 'pg';
 import 'dotenv/config';
 
 const globalForPrisma = globalThis as unknown as {
-    prismaClientInstance: PrismaClient;
+    prismaClientInstance_v3: PrismaClient;
     pool: Pool;
 };
 
@@ -23,10 +23,10 @@ function createPrismaClient() {
     return new PrismaClient({ adapter });
 }
 
-export const prisma = globalForPrisma.prismaClientInstance || createPrismaClient();
+export const prisma = globalForPrisma.prismaClientInstance_v3 || createPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') {
-    globalForPrisma.prismaClientInstance = prisma;
+    globalForPrisma.prismaClientInstance_v3 = prisma;
 }
 
 export default prisma;
