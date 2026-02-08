@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['ali-oss', 'proxy-agent'],
+  serverExternalPackages: ['ali-oss', 'proxy-agent', 'svg-captcha'],
   images: {
     remotePatterns: [
       {
