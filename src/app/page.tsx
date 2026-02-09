@@ -177,7 +177,7 @@ export default function HomePage() {
 
           {/* 右侧导航 */}
           <div className="flex items-center gap-4">
-            <a href="mailto:contact@buysoft.com" className="flex items-center gap-1 text-sm text-gray-600 hover:text-blue-600">
+            <a href="mailto:contact@buysoft.com" className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600">
               <Mail className="w-4 h-4" />
               联系我们
             </a>
