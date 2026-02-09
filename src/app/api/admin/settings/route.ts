@@ -4,11 +4,6 @@ import bcrypt from 'bcryptjs';
 
 // 系统配置 key 列表
 const CONFIG_KEYS = {
-    OSS_REGION: 'oss_region',
-    OSS_ACCESS_KEY_ID: 'oss_access_key_id',
-    OSS_ACCESS_KEY_SECRET: 'oss_access_key_secret',
-    OSS_BUCKET: 'oss_bucket',
-    OSS_ENDPOINT: 'oss_endpoint',
     SMMS_TOKEN: 'smms_token',
     SITE_NAME: 'site_name',
     SITE_DESCRIPTION: 'site_description',
@@ -24,7 +19,7 @@ export async function GET() {
         const settings: Record<string, string> = {};
         configs.forEach((config: { key: string; value: string }) => {
             // 敏感信息脱敏
-            if ((config.key === CONFIG_KEYS.OSS_ACCESS_KEY_SECRET || config.key === CONFIG_KEYS.SMMS_TOKEN) && config.value) {
+            if (config.key === CONFIG_KEYS.SMMS_TOKEN && config.value) {
                 settings[config.key] = config.value.replace(/./g, (c: string, i: number) =>
                     i < 4 || i >= config.value.length - 4 ? c : '*'
                 );
@@ -63,18 +58,13 @@ export async function POST(request: NextRequest) {
             case 'update_oss': {
                 // 更新 OSS 配置
                 const ossKeys = [
-                    'oss_region', 
-                    'oss_access_key_id', 
-                    'oss_access_key_secret', 
-                    'oss_bucket', 
-                    'oss_endpoint',
                     'smms_token'
                 ];
 
                 for (const key of ossKeys) {
                     if (data[key] !== undefined) {
                         // 如果是密钥且包含*，说明是脱敏数据，忽略
-                        if ((key === 'oss_access_key_secret' || key === 'smms_token') && data[key].includes('*')) {
+                        if (key === 'smms_token' && data[key].includes('*')) {
                             continue;
                         }
 

@@ -52,6 +52,24 @@ export async function POST(request: NextRequest) {
         const data = await response.json();
 
         if (data.success) {
+            // 保存到本地数据库，标记为本站上传
+            try {
+                await prisma.uploadedImage.create({
+                    data: {
+                        url: data.data.url,
+                        filename: data.data.filename || file.name,
+                        width: data.data.width ? parseInt(String(data.data.width)) : null,
+                        height: data.data.height ? parseInt(String(data.data.height)) : null,
+                        size: data.data.size ? parseInt(String(data.data.size)) : null,
+                        hash: data.data.hash,
+                        deleteUrl: data.data.delete
+                    }
+                });
+            } catch (dbError) {
+                console.error('保存上传记录到数据库失败:', dbError);
+                // 即使保存数据库失败，也不应该阻断上传流程，因为图片已经上传成功
+            }
+
             return NextResponse.json({ 
                 success: true, 
                 url: data.data.url,
@@ -59,10 +77,28 @@ export async function POST(request: NextRequest) {
             });
         } else if (data.code === 'image_repeated') {
             // SM.MS returns this code if image already exists
+            const url = data.images || (typeof data.data === 'string' ? data.data : data.data?.url);
+
+            // 如果是重复图片，也尝试记录到本地（如果本地没有的话），以便在历史记录中显示
+            if (url) {
+                try {
+                    const existing = await prisma.uploadedImage.findFirst({ where: { url } });
+                    if (!existing) {
+                        await prisma.uploadedImage.create({
+                            data: {
+                                url: url,
+                                filename: file.name, // 使用本次上传的文件名作为记录
+                            }
+                        });
+                    }
+                } catch (e) {
+                    console.error('保存重复图片记录失败:', e);
+                }
+            }
+
             return NextResponse.json({ 
                 success: true, 
-                url: data.images // specific field for repeated images in some versions, or check data.data
-                || (typeof data.data === 'string' ? data.data : data.data?.url) // fallback
+                url: url
             });
         } else {
             return NextResponse.json({ success: false, error: data.message || 'SM.MS 上传失败' }, { status: 400 });

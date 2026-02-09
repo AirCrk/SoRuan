@@ -39,11 +39,6 @@ export default function SettingsPage() {
 
     // OSS 配置
     const [ossConfig, setOssConfig] = useState({
-        oss_region: '',
-        oss_access_key_id: '',
-        oss_access_key_secret: '',
-        oss_bucket: '',
-        oss_endpoint: '',
         smms_token: '',
     });
 
@@ -99,11 +94,6 @@ export default function SettingsPage() {
                 const { settings, admins: adminList } = data.data as SettingsData;
 
                 setOssConfig({
-                    oss_region: settings.oss_region || '',
-                    oss_access_key_id: settings.oss_access_key_id || '',
-                    oss_access_key_secret: settings.oss_access_key_secret || '',
-                    oss_bucket: settings.oss_bucket || '',
-                    oss_endpoint: settings.oss_endpoint || '',
                     smms_token: settings.smms_token || '',
                 });
 
@@ -204,10 +194,9 @@ export default function SettingsPage() {
         setUploadingBanner(true);
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('folder', 'banners');
 
         try {
-            const res = await fetch('/api/upload', {
+            const res = await fetch('/api/upload/smms', {
                 method: 'POST',
                 body: formData,
             });
@@ -434,7 +423,7 @@ export default function SettingsPage() {
                             <div className="space-y-5 max-w-2xl">
                                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                                     <p className="text-sm text-blue-700">
-                                        配置阿里云 OSS 后，商品封面和富文本图片将上传到您的 OSS 存储桶中。
+                                        配置 SM.MS 图床后，商品封面和富文本图片将上传到 SM.MS 图床中。
                                     </p>
                                 </div>
 
@@ -455,89 +444,16 @@ export default function SettingsPage() {
                                     <p className="text-xs text-gray-500 mt-1">从 https://sm.ms/home/apitoken 获取 Secret Token</p>
                                 </div>
 
-                                <div className="pt-4 border-t border-gray-200 space-y-5">
-                                <h3 className="font-medium text-gray-900 mb-4 flex items-center gap-2">
-                                        <CloudCog className="w-5 h-5 text-blue-600" />
-                                        阿里云 OSS 配置
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Region (区域)
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={ossConfig.oss_region}
-                                                onChange={(e) => setOssConfig({ ...ossConfig, oss_region: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                placeholder="oss-cn-hangzhou"
-                                            />
-                                        </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                            存储桶名称 (Bucket)
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={ossConfig.oss_bucket}
-                                            onChange={(e) => setOssConfig(prev => ({ ...prev, oss_bucket: e.target.value }))}
-                                            placeholder="your-bucket-name"
-                                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                        访问域名 (Endpoint)
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={ossConfig.oss_endpoint}
-                                        onChange={(e) => setOssConfig(prev => ({ ...prev, oss_endpoint: e.target.value }))}
-                                        placeholder="https://oss-cn-hangzhou.aliyuncs.com"
-                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                        Access Key ID
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={ossConfig.oss_access_key_id}
-                                        onChange={(e) => setOssConfig(prev => ({ ...prev, oss_access_key_id: e.target.value }))}
-                                        placeholder="您的 AccessKey ID"
-                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                        Access Key Secret
-                                    </label>
-                                    <input
-                                        type="password"
-                                        value={ossConfig.oss_access_key_secret}
-                                        onChange={(e) => setOssConfig(prev => ({ ...prev, oss_access_key_secret: e.target.value }))}
-                                        placeholder="您的 AccessKey Secret"
-                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">保存后密钥将被加密存储</p>
-                                </div>
-
                                 <button
                                     onClick={saveOssConfig}
                                     disabled={saving}
                                     className="btn-primary flex items-center gap-2"
                                 >
                                     {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                保存 OSS 配置
-                            </button>
-                        </div>
-                        </div>
-                    )}
+                                    保存图床配置
+                                </button>
+                            </div>
+                        )}
 
                         {/* 站点配置 */}
                         {activeTab === 'site' && (

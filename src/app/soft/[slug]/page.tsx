@@ -78,7 +78,7 @@ export default async function ProductPage({ params }: Props) {
                     {/* 商品头部信息 */}
                     <div className="p-8 md:p-10 flex flex-col md:flex-row gap-8 md:gap-12">
                         {/* 左侧：图标/封面 */}
-                        <div className="flex-shrink-0 w-full md:w-80">
+                        <div className="flex-shrink-0 w-full md:w-[480px]">
                             <ProductGallery 
                                 images={product.images && product.images.length > 0 ? product.images : (product.coverImage ? [product.coverImage] : [])}
                                 name={product.name}
@@ -106,19 +106,21 @@ export default async function ProductPage({ params }: Props) {
                                 ))}
                             </div>
 
-                            <div className="mt-auto flex flex-col md:flex-row items-center gap-6 w-full md:w-auto">
-                                <div className="text-center md:text-left">
-                                    <div className="flex items-baseline gap-2">
-                                        <span className="text-3xl font-bold text-red-600">¥{Number(product.salePrice).toFixed(2)}</span>
-                                        <span className="text-sm text-gray-400 line-through">¥{Number(product.originalPrice).toFixed(2)}</span>
+                            <div className="mt-auto w-full md:w-auto mb-6">
+                                <div className="flex flex-col items-center md:items-start">
+                                    <div className="flex items-baseline gap-3">
+                                        <span className="text-4xl font-bold text-red-600">¥{Number(product.salePrice).toFixed(2)}</span>
+                                        <span className="text-lg text-gray-400 line-through">¥{Number(product.originalPrice).toFixed(2)}</span>
                                     </div>
                                     {product.originalPrice > product.salePrice && (
-                                        <div className="text-xs text-red-500 font-medium bg-red-50 px-2 py-0.5 rounded mt-1 inline-block">
+                                        <div className="text-sm text-red-500 font-medium bg-red-50 px-2 py-0.5 rounded mt-2 inline-block">
                                             {Math.round((1 - product.salePrice / product.originalPrice) * 100)}% OFF
                                         </div>
                                     )}
                                 </div>
+                            </div>
 
+                            <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
                                 {product.downloadUrl && (
                                     <a
                                         href={product.downloadUrl}

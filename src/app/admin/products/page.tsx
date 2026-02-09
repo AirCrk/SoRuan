@@ -141,7 +141,7 @@ export default function AdminProductsPage() {
                                     placeholder="搜索商品..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white w-48 sm:w-64"
+                                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white w-48 sm:w-64"
                                 />
                             </div>
 
@@ -206,9 +206,9 @@ export default function AdminProductsPage() {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-4">
                                                         <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0 border border-gray-200">
-                                                            {(product.logo || product.coverImage) ? (
+                                                            {product.logo ? (
                                                                 <Image
-                                                                    src={product.logo || product.coverImage}
+                                                                    src={product.logo}
                                                                     alt={product.name}
                                                                     width={48}
                                                                     height={48}

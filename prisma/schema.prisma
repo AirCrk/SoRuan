@@ -99,6 +99,22 @@ model FriendLink {
   
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
 
-  @@index([isActive, sortOrder])
+// 上传图片记录（用于本地管理图床图片）
+model UploadedImage {
+  id        String   @id @default(cuid())
+  url       String   // 图片链接
+  filename  String   // 文件名
+  width     Int?     // 宽度
+  height    Int?     // 高度
+  size      Int?     // 大小(字节)
+  hash      String?  // SM.MS hash
+  deleteUrl String?  // 删除链接
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([filename])
+  @@index([createdAt])
 }

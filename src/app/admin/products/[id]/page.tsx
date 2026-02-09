@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Upload, X, Save, Loader2, CloudUpload } from 'lucide-react';
+import { ArrowLeft, Upload, X, Save, Loader2, CloudUpload, History, Image as ImageIcon } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 
@@ -36,6 +36,87 @@ export default function ProductEditPage() {
     const [uploading, setUploading] = useState(false);
     const [platforms, setPlatforms] = useState<Platform[]>([]);
     const [channels, setChannels] = useState<Channel[]>([]);
+    
+    // 历史图片相关
+    const [showHistory, setShowHistory] = useState(false);
+    const [historyImages, setHistoryImages] = useState<{ url: string; filename: string }[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+    const [historyTarget, setHistoryTarget] = useState<'logo' | 'cover'>('logo');
+    const [historyPage, setHistoryPage] = useState(1);
+    const [historyTotalPages, setHistoryTotalPages] = useState(0);
+    const [historySearch, setHistorySearch] = useState('');
+    const [historyTotal, setHistoryTotal] = useState(0);
+    const [historyError, setHistoryError] = useState('');
+
+    // 获取历史图片
+    const fetchHistory = async (page = 1, keyword = '') => {
+        setLoadingHistory(true);
+        setHistoryError('');
+        try {
+            const query = new URLSearchParams({
+                page: page.toString(),
+                limit: '10',
+                keyword: keyword
+            });
+            const res = await fetch(`/api/upload/smms/history?${query}`);
+            const data = await res.json();
+            if (data.success) {
+                setHistoryImages(data.data);
+                if (data.pagination) {
+                    setHistoryTotalPages(data.pagination.totalPages);
+                    setHistoryPage(data.pagination.page);
+                    setHistoryTotal(data.pagination.total);
+                }
+            } else {
+                setHistoryError(data.error || '获取历史记录失败');
+            }
+        } catch (error) {
+            console.error(error);
+            setHistoryError('获取历史记录失败');
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
+    // 打开历史记录弹窗
+    const openHistory = (target: 'logo' | 'cover') => {
+        setHistoryTarget(target);
+        setShowHistory(true);
+        setHistoryPage(1);
+        setHistorySearch('');
+        setHistoryError('');
+        fetchHistory(1, '');
+    };
+
+    // 搜索历史图片
+    const handleHistorySearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        fetchHistory(1, historySearch);
+    };
+
+    // 翻页
+    const handleHistoryPageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= historyTotalPages) {
+            fetchHistory(newPage, historySearch);
+        }
+    };
+
+    // 选择历史图片
+    const selectHistoryImage = (url: string) => {
+        if (historyTarget === 'logo') {
+            setFormData(prev => ({ ...prev, logo: url }));
+        } else {
+            setFormData(prev => {
+                const newImages = [...prev.images, url];
+                return {
+                    ...prev,
+                    images: newImages,
+                    coverImage: newImages[0]
+                };
+            });
+        }
+        setShowHistory(false);
+    };
 
     // 表单数据
     const [formData, setFormData] = useState({
@@ -117,7 +198,7 @@ export default function ProductEditPage() {
     }, [status, fetchProduct, router]);
 
     // 上传 Logo
-    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'oss' | 'smms' = 'oss') => {
+    const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -125,13 +206,8 @@ export default function ProductEditPage() {
         const formData = new FormData();
         formData.append('file', file);
         
-        if (target === 'oss') {
-            formData.append('folder', 'logos');
-        }
-
         try {
-            const endpoint = target === 'smms' ? '/api/upload/smms' : '/api/upload';
-            const res = await fetch(endpoint, {
+            const res = await fetch('/api/upload/smms', {
                 method: 'POST',
                 body: formData,
             });
@@ -152,7 +228,7 @@ export default function ProductEditPage() {
     };
 
     // 上传封面图片
-    const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>, target: 'oss' | 'smms' = 'oss') => {
+    const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -160,13 +236,8 @@ export default function ProductEditPage() {
         const formData = new FormData();
         formData.append('file', file);
         
-        if (target === 'oss') {
-            formData.append('folder', 'covers');
-        }
-
         try {
-            const endpoint = target === 'smms' ? '/api/upload/smms' : '/api/upload';
-            const res = await fetch(endpoint, {
+            const res = await fetch('/api/upload/smms', {
                 method: 'POST',
                 body: formData,
             });
@@ -423,37 +494,29 @@ export default function ProductEditPage() {
                         {/* 上传控件 */}
                         <div className="flex-1 space-y-4">
                             <div className="flex flex-wrap gap-3">
-                                <label className="btn-secondary inline-flex items-center gap-2 cursor-pointer">
-                                    {uploading ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <Upload className="w-4 h-4" />
-                                    )}
-                                    {uploading ? '上传中...' : '上传Logo'}
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={(e) => handleLogoUpload(e, 'oss')}
-                                        className="hidden"
-                                        disabled={uploading}
-                                    />
-                                </label>
-                                
                                 <label className="btn-secondary inline-flex items-center gap-2 cursor-pointer bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100">
                                     {uploading ? (
                                         <Loader2 className="w-4 h-4 animate-spin" />
                                     ) : (
                                         <CloudUpload className="w-4 h-4" />
                                     )}
-                                    {uploading ? '上传中...' : 'SM.MS 图床'}
+                                    {uploading ? '上传中...' : 'SM.MS 图床上传'}
                                     <input
                                         type="file"
                                         accept="image/*"
-                                        onChange={(e) => handleLogoUpload(e, 'smms')}
+                                        onChange={(e) => handleLogoUpload(e)}
                                         className="hidden"
                                         disabled={uploading}
                                     />
                                 </label>
+                                <button
+                                    type="button"
+                                    onClick={() => openHistory('logo')}
+                                    className="btn-secondary inline-flex items-center gap-2 bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
+                                >
+                                    <History className="w-4 h-4" />
+                                    历史图片
+                                </button>
                             </div>
                             
                             <input
@@ -519,37 +582,29 @@ export default function ProductEditPage() {
                         {formData.images.length < 5 && (
                             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300">
                                 <div className="flex gap-3">
-                                    <label className="btn-secondary inline-flex items-center gap-2 cursor-pointer">
-                                        {uploading ? (
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                        ) : (
-                                            <Upload className="w-4 h-4" />
-                                        )}
-                                        {uploading ? '上传中...' : '上传到服务器'}
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) => handleCoverUpload(e, 'oss')}
-                                            className="hidden"
-                                            disabled={uploading}
-                                        />
-                                    </label>
-                                    
                                     <label className="btn-secondary inline-flex items-center gap-2 cursor-pointer bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100">
                                         {uploading ? (
                                             <Loader2 className="w-4 h-4 animate-spin" />
                                         ) : (
                                             <CloudUpload className="w-4 h-4" />
                                         )}
-                                        {uploading ? '上传中...' : 'SM.MS 图床'}
+                                        {uploading ? '上传中...' : 'SM.MS 图床上传'}
                                         <input
                                             type="file"
                                             accept="image/*"
-                                            onChange={(e) => handleCoverUpload(e, 'smms')}
+                                            onChange={(e) => handleCoverUpload(e)}
                                             className="hidden"
                                             disabled={uploading}
                                         />
                                     </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => openHistory('cover')}
+                                        className="btn-secondary inline-flex items-center gap-2 bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100"
+                                    >
+                                        <History className="w-4 h-4" />
+                                        历史图片
+                                    </button>
                                 </div>
                                 
                                 <div className="flex-1 w-full sm:w-auto">
@@ -646,6 +701,114 @@ export default function ProductEditPage() {
                     />
                 </div>
             </form>
+
+            {/* 历史图片弹窗 */}
+            {showHistory && (
+                <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl max-h-[80vh] flex flex-col">
+                        <div className="flex items-center justify-between p-4 border-b">
+                            <h3 className="text-lg font-bold flex items-center gap-2">
+                                <History className="w-5 h-5 text-blue-600" />
+                                历史上传图片
+                            </h3>
+                            <div className="flex items-center gap-4">
+                                <form onSubmit={handleHistorySearch} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="搜索图片..."
+                                        className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        value={historySearch}
+                                        onChange={(e) => setHistorySearch(e.target.value)}
+                                    />
+                                    <button
+                                        type="submit"
+                                        className="px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-lg text-sm hover:bg-blue-100 font-medium"
+                                    >
+                                        搜索
+                                    </button>
+                                </form>
+                                <button
+                                    onClick={() => setShowHistory(false)}
+                                    className="p-2 hover:bg-gray-100 rounded-full text-gray-500"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto p-4">
+                            {loadingHistory ? (
+                                <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                                    <Loader2 className="w-8 h-8 animate-spin mb-2" />
+                                    <p>加载中...</p>
+                                </div>
+                            ) : historyError ? (
+                                <div className="flex flex-col items-center justify-center py-12 text-red-500 bg-red-50 rounded-lg border border-red-200 h-full">
+                                    <p className="font-bold mb-2">获取图片失败</p>
+                                    <p className="text-sm text-center max-w-lg">{historyError}</p>
+                                </div>
+                            ) : historyImages.length > 0 ? (
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                                    {historyImages.map((img, index) => (
+                                        <div
+                                            key={index}
+                                            onClick={() => selectHistoryImage(img.url)}
+                                            className="group cursor-pointer border border-gray-200 rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500 hover:border-transparent transition-all relative aspect-square"
+                                        >
+                                            <Image
+                                                src={img.url}
+                                                alt={img.filename}
+                                                fill
+                                                className="object-cover"
+                                            />
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                                            <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {img.filename}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center py-12 text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200">
+                                    <ImageIcon className="w-12 h-12 text-gray-300 mb-2" />
+                                    <p>暂无上传记录</p>
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="p-4 border-t bg-gray-50 text-sm text-gray-500 rounded-b-xl flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    disabled={historyPage <= 1}
+                                    onClick={() => handleHistoryPageChange(historyPage - 1)}
+                                    className="px-3 py-1.5 border border-gray-300 rounded-lg bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                                >
+                                    上一页
+                                </button>
+                                <span className="font-medium text-gray-700 min-w-[3rem] text-center">
+                                    {historyPage} / {Math.max(1, historyTotalPages)}
+                                </span>
+                                <button 
+                                    disabled={historyPage >= historyTotalPages}
+                                    onClick={() => handleHistoryPageChange(historyPage + 1)}
+                                    className="px-3 py-1.5 border border-gray-300 rounded-lg bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                                >
+                                    下一页
+                                </button>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <span className="text-gray-500">共 {historyTotal} 张图片</span>
+                                <button
+                                    onClick={() => setShowHistory(false)}
+                                    className="px-4 py-1.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium text-gray-700"
+                                >
+                                    取消
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

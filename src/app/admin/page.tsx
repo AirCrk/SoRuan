@@ -28,6 +28,7 @@ interface Product {
     originalPrice: number;
     salePrice: number;
     coverImage: string | null;
+    logo: string | null;
     platforms: Platform[];
     channel: Channel | null;
     isActive: boolean;
@@ -231,18 +232,18 @@ export default function AdminDashboard() {
                                     <tr key={product.id}>
                                         <td>
                                             <div className="flex items-center gap-3">
-                                                <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                                                    {product.coverImage ? (
+                                                <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200">
+                                                    {product.logo ? (
                                                         <Image
-                                                            src={product.coverImage}
+                                                            src={product.logo}
                                                             alt={product.name}
                                                             width={48}
                                                             height={48}
                                                             className="w-full h-full object-cover"
                                                         />
                                                     ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-blue-100">
-                                                            <Package className="w-6 h-6 text-blue-500" />
+                                                        <div className="w-full h-full flex items-center justify-center text-gray-400 font-bold text-lg">
+                                                            {product.name.charAt(0)}
                                                         </div>
                                                     )}
                                                 </div>

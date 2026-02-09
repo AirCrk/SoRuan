@@ -7,7 +7,7 @@ import VideoExtension from '@/lib/tiptap/video-extension';
 import {
     Bold, Italic, List, ListOrdered, Heading1, Heading2,
     Image, Undo, Redo, Upload, CloudUpload, Link, X, Loader2,
-    Video as VideoIcon
+    Video as VideoIcon, History, Image as ImageIcon
 } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 
@@ -24,44 +24,102 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
     const [videoUrl, setVideoUrl] = useState('');
     const [uploading, setUploading] = useState(false);
 
+    // 历史图片相关
+    const [showHistory, setShowHistory] = useState(false);
+    const [historyImages, setHistoryImages] = useState<{ url: string; filename: string }[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+    const [historyPage, setHistoryPage] = useState(1);
+    const [historyTotalPages, setHistoryTotalPages] = useState(0);
+    const [historySearch, setHistorySearch] = useState('');
+    const [historyTotal, setHistoryTotal] = useState(0);
+    const [historyError, setHistoryError] = useState('');
+
     const editor = useEditor({
         extensions: [
             StarterKit,
-            TiptapImage.configure({
-                HTMLAttributes: {
-                    class: 'max-w-full h-auto rounded-lg',
-                },
-            }),
+            TiptapImage,
             VideoExtension,
         ],
-        content,
-        immediatelyRender: false,
-        editorProps: {
-            attributes: {
-                class: 'tiptap-editor focus:outline-none',
-            },
-        },
+        content: content,
         onUpdate: ({ editor }) => {
             onChange(editor.getHTML());
         },
+        immediatelyRender: false,
     });
 
+    // 获取历史图片
+    const fetchHistory = async (page = 1, keyword = '') => {
+        setLoadingHistory(true);
+        setHistoryError('');
+        try {
+            const query = new URLSearchParams({
+                page: page.toString(),
+                limit: '10',
+                keyword: keyword
+            });
+            const res = await fetch(`/api/upload/smms/history?${query}`);
+            const data = await res.json();
+            if (data.success) {
+                setHistoryImages(data.data);
+                if (data.pagination) {
+                    setHistoryTotalPages(data.pagination.totalPages);
+                    setHistoryPage(data.pagination.page);
+                    setHistoryTotal(data.pagination.total);
+                }
+            } else {
+                setHistoryError(data.error || '获取历史记录失败');
+            }
+        } catch (error) {
+            console.error(error);
+            setHistoryError('获取历史记录失败');
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
+    // 切换历史图片显示
+    const toggleHistory = () => {
+        if (!showHistory) {
+            setHistoryPage(1);
+            setHistorySearch('');
+            setHistoryError('');
+            fetchHistory(1, '');
+        }
+        setShowHistory(!showHistory);
+    };
+
+    // 搜索历史图片
+    const handleHistorySearch = (e: React.FormEvent) => {
+        e.preventDefault();
+        fetchHistory(1, historySearch);
+    };
+
+    // 翻页
+    const handleHistoryPageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= historyTotalPages) {
+            fetchHistory(newPage, historySearch);
+        }
+    };
+
+    // 选择历史图片
+    const selectHistoryImage = (url: string) => {
+        if (!editor) return;
+        editor.chain().focus().setImage({ src: url }).run();
+        setShowImageModal(false);
+        setShowHistory(false);
+        setImageUrl('');
+    };
+
     // 上传图片
-    const handleImageUpload = useCallback(async (file: File, target: 'oss' | 'smms' = 'oss') => {
+    const handleImageUpload = useCallback(async (file: File) => {
         if (!editor) return;
 
         setUploading(true);
         const formData = new FormData();
         formData.append('file', file);
         
-        // OSS 需要 folder 参数
-        if (target === 'oss') {
-            formData.append('folder', 'editor');
-        }
-
         try {
-            const endpoint = target === 'smms' ? '/api/upload/smms' : '/api/upload';
-            const res = await fetch(endpoint, {
+            const res = await fetch('/api/upload/smms', {
                 method: 'POST',
                 body: formData,
             });
@@ -81,10 +139,10 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
         }
     }, [editor]);
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, target: 'oss' | 'smms') => {
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            handleImageUpload(file, target);
+            handleImageUpload(file);
         }
         e.target.value = '';
     };
@@ -192,7 +250,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
-                    onChange={(e) => handleFileSelect(e, 'oss')}
+                    onChange={(e) => handleFileSelect(e)}
                     className="hidden"
                 />
 
@@ -227,51 +285,131 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
                     <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl mx-4">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="font-bold text-lg">插入图片</h3>
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setShowImageModal(false);
-                                    setImageUrl('');
-                                }}
-                                className="p-1 hover:bg-gray-100 rounded"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                {showHistory && (
+                                    <form onSubmit={handleHistorySearch} className="flex gap-2 mr-2">
+                                        <input
+                                            type="text"
+                                            placeholder="搜索图片..."
+                                            className="px-2 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent w-32"
+                                            value={historySearch}
+                                            onChange={(e) => setHistorySearch(e.target.value)}
+                                        />
+                                        <button
+                                            type="submit"
+                                            className="px-2 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded text-sm hover:bg-blue-100 font-medium whitespace-nowrap"
+                                        >
+                                            搜索
+                                        </button>
+                                    </form>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={toggleHistory}
+                                    className={`p-1.5 rounded flex items-center gap-1 text-sm font-medium transition-colors ${
+                                        showHistory ? 'bg-blue-100 text-blue-700' : 'hover:bg-gray-100 text-gray-600'
+                                    }`}
+                                >
+                                    <History className="w-4 h-4" />
+                                    {showHistory ? '返回上传' : '历史图片'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowImageModal(false);
+                                        setImageUrl('');
+                                        setShowHistory(false);
+                                    }}
+                                    className="p-1 hover:bg-gray-100 rounded"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="space-y-4">
-                            {/* 上传图片 */}
-                            <div>
+                        {showHistory ? (
+                            <div className="min-h-[300px] flex flex-col">
+                                <div className="flex-1 overflow-y-auto max-h-[400px]">
+                                    {loadingHistory ? (
+                                        <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                                            <Loader2 className="w-8 h-8 animate-spin mb-2" />
+                                            <p>加载中...</p>
+                                        </div>
+                                    ) : historyError ? (
+                                        <div className="flex flex-col items-center justify-center py-12 text-red-500 bg-red-50 rounded-lg border border-red-200 h-full mx-1">
+                                            <p className="font-bold mb-2">获取图片失败</p>
+                                            <p className="text-sm text-center max-w-xs">{historyError}</p>
+                                        </div>
+                                    ) : historyImages.length > 0 ? (
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {historyImages.map((img, index) => (
+                                                <button
+                                                    key={index}
+                                                    type="button"
+                                                    onClick={() => selectHistoryImage(img.url)}
+                                                    className="group cursor-pointer border border-gray-200 rounded-lg overflow-hidden hover:ring-2 hover:ring-blue-500 hover:border-transparent transition-all relative aspect-square w-full"
+                                                >
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img
+                                                        src={img.url}
+                                                        alt={img.filename}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs p-1 truncate opacity-0 group-hover:opacity-100 transition-opacity text-left">
+                                                        {img.filename}
+                                                    </div>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center py-12 text-gray-500 bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 h-full">
+                                            <ImageIcon className="w-12 h-12 text-gray-300 mb-2" />
+                                            <p>暂无上传记录</p>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="mt-4 pt-4 border-t border-gray-100 flex justify-center">
+                                    <div className="flex items-center gap-2">
+                                        <button 
+                                            disabled={historyPage <= 1}
+                                            onClick={() => handleHistoryPageChange(historyPage - 1)}
+                                            className="px-3 py-1.5 border border-gray-300 rounded-lg bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors text-sm"
+                                        >
+                                            上一页
+                                        </button>
+                                        <span className="font-medium text-gray-700 min-w-[3rem] text-center text-sm">
+                                            {historyPage} / {Math.max(1, historyTotalPages)}
+                                        </span>
+                                        <button 
+                                            disabled={historyPage >= historyTotalPages}
+                                            onClick={() => handleHistoryPageChange(historyPage + 1)}
+                                            className="px-3 py-1.5 border border-gray-300 rounded-lg bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors text-sm"
+                                        >
+                                            下一页
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {/* 上传图片 */}
+                                <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     上传图片
                                 </label>
                                 <div className="flex gap-2">
-                                    <label className="btn-secondary flex-1 inline-flex items-center justify-center gap-2 cursor-pointer">
-                                        {uploading ? (
-                                            <Loader2 className="w-4 h-4 animate-spin" />
-                                        ) : (
-                                            <Upload className="w-4 h-4" />
-                                        )}
-                                        {uploading ? '上传中...' : '上传到服务器'}
-                                        <input
-                                            type="file"
-                                            accept="image/*"
-                                            onChange={(e) => handleFileSelect(e, 'oss')}
-                                            className="hidden"
-                                            disabled={uploading}
-                                        />
-                                    </label>
                                     <label className="btn-secondary flex-1 inline-flex items-center justify-center gap-2 cursor-pointer bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100">
                                         {uploading ? (
                                             <Loader2 className="w-4 h-4 animate-spin" />
                                         ) : (
                                             <CloudUpload className="w-4 h-4" />
                                         )}
-                                        {uploading ? '上传中...' : 'SM.MS 图床'}
+                                        {uploading ? '上传中...' : 'SM.MS 图床上传'}
                                         <input
                                             type="file"
                                             accept="image/*"
-                                            onChange={(e) => handleFileSelect(e, 'smms')}
+                                            onChange={(e) => handleFileSelect(e)}
                                             className="hidden"
                                             disabled={uploading}
                                         />
@@ -307,7 +445,9 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
                                 />
                             </div>
                         </div>
+                        )}
 
+                        {!showHistory && (
                         <div className="flex gap-3 mt-6">
                             <button
                                 type="button"
@@ -328,6 +468,7 @@ export default function RichTextEditor({ content, onChange }: RichTextEditorProp
                                 插入图片
                             </button>
                         </div>
+                        )}
                     </div>
                 </div>
             )}
