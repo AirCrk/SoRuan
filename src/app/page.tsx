@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Search, ShoppingCart, Mail, Monitor, Apple, Smartphone } from 'lucide-react';
+import { Search, Mail, Monitor, Apple, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import BannerCarousel from '@/components/BannerCarousel';
@@ -177,9 +177,6 @@ export default function HomePage() {
 
           {/* 右侧导航 */}
           <div className="flex items-center gap-4">
-            <button className="p-2 text-gray-500 hover:text-gray-700">
-              <ShoppingCart className="w-5 h-5" />
-            </button>
             <a href="mailto:contact@buysoft.com" className="flex items-center gap-1 text-sm text-gray-600 hover:text-blue-600">
               <Mail className="w-4 h-4" />
               联系我们
