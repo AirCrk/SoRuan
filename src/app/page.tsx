@@ -52,7 +52,7 @@ export default function HomePage() {
   const [activeCategory, setActiveCategory] = useState('全部');
   const [bannerSlides, setBannerSlides] = useState<BannerSlide[]>([]);
   const [siteConfig, setSiteConfig] = useState({
-    site_name: 'BuySoft',
+    site_name: 'SoRuan',
     site_logo: '',
   });
   const [friendLinks, setFriendLinks] = useState<FriendLink[]>([]);
