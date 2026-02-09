@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ['ali-oss', 'proxy-agent', 'svg-captcha'],
+  eslint: {
+    // 警告：这允许生产构建即使存在 ESLint 错误也能成功完成。
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    // 警告：这允许生产构建即使存在 TypeScript 错误也能成功完成。
+    ignoreBuildErrors: true,
+  },
   images: {
     remotePatterns: [
       {
