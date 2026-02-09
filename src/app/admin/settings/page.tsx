@@ -49,6 +49,7 @@ export default function SettingsPage() {
     // 站点配置
     const [siteConfig, setSiteConfig] = useState({
         site_name: '',
+        site_title: '',
         site_description: '',
         site_logo: '',
         footer_copyright: '',
@@ -106,6 +107,7 @@ export default function SettingsPage() {
 
                 setSiteConfig({
                     site_name: settings.site_name || '',
+                    site_title: settings.site_title || '',
                     site_description: settings.site_description || '',
                     site_logo: settings.site_logo || '',
                     footer_copyright: settings.footer_copyright || '',
@@ -515,6 +517,19 @@ export default function SettingsPage() {
                         {/* 站点配置 */}
                         {activeTab === 'site' && (
                             <div className="space-y-5 max-w-2xl">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        浏览器标题 (Title)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={siteConfig.site_title}
+                                        onChange={(e) => setSiteConfig(prev => ({ ...prev, site_title: e.target.value }))}
+                                        placeholder="SoRuan - 正版软件导航平台"
+                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">显示在浏览器标签页上的标题</p>
+                                </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1.5">
                                         站点名称
