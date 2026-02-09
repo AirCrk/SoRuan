@@ -20,9 +20,28 @@ function createPrismaClient() {
     }
 
     // 限制连接池大小，避免 Supabase 连接数耗尽
+    if (process.env.NODE_ENV !== 'production') {
+        // 检查是否仍在使用 5432 (Session Mode)
+        if (connectionString?.includes(':5432')) {
+            const errorMsg = `
+================================================================================
+🚨 错误：检测到旧的数据库连接配置 (端口 5432)！
+   您必须【重启开发服务器】(Ctrl+C 然后 npm run dev) 以应用新的 .env 配置。
+   新的配置应使用端口 6543 (Transaction Mode) 来解决连接数限制问题。
+================================================================================
+            `;
+            console.error(errorMsg);
+            throw new Error('请重启开发服务器以应用 .env 更新！');
+        }
+
+        // 脱敏输出连接字符串，方便调试连接模式（Session:5432 vs Transaction:6543）
+        const maskedUrl = connectionString?.replace(/:[^:]*@/, ':****@');
+        console.log(`[Prisma] Connecting to DB: ${maskedUrl}`);
+    }
+
     const pool = new Pool({
         connectionString: connectionString || '', // Prevent crash if undefined
-        max: process.env.NODE_ENV === 'development' ? 2 : 10,
+        max: process.env.NODE_ENV === 'development' ? 1 : 10,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 5000,
     });
