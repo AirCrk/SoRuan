@@ -21,16 +21,16 @@ function createPrismaClient() {
     }
 
     // 限制连接池大小，避免 Supabase 连接数耗尽
-    if (process.env.NODE_ENV !== 'production') {
-        // 自动将 5432 (Session Mode) 替换为 6543 (Transaction Mode)
-        if (connectionString?.includes(':5432')) {
-            console.warn('⚠️ 检测到端口 5432，自动切换到 6543 (Transaction Mode) 以解决连接限制问题。');
-            // 注意：这里我们修改的是局部变量，用来创建 Pool
-            // eslint-disable-next-line no-param-reassign
-            // @ts-ignore
-            connectionString = connectionString.replace(':5432', ':6543');
-        }
+    // 自动将 5432 (Session Mode) 替换为 6543 (Transaction Mode)
+    if (connectionString?.includes(':5432')) {
+        console.warn('⚠️ 检测到端口 5432，自动切换到 6543 (Transaction Mode) 以解决连接限制问题。');
+        // 注意：这里我们修改的是局部变量，用来创建 Pool
+        // eslint-disable-next-line no-param-reassign
+        // @ts-ignore
+        connectionString = connectionString.replace(':5432', ':6543');
+    }
 
+    if (process.env.NODE_ENV !== 'production') {
         // 脱敏输出连接字符串，方便调试连接模式（Session:5432 vs Transaction:6543）
         const maskedUrl = connectionString?.replace(/:[^:]*@/, ':****@');
         console.log(`[Prisma] Connecting to DB: ${maskedUrl}`);
@@ -38,7 +38,10 @@ function createPrismaClient() {
 
     const pool = new Pool({
         connectionString: connectionString || '', // Prevent crash if undefined
-        max: process.env.NODE_ENV === 'development' ? 1 : 10,
+        // 在构建期间 (Production)，Next.js 会启动多个 Worker，如果连接池太大 (如 10)，
+        // 9个 Worker * 10 = 90 连接，极易耗尽 Supabase 限制。
+        // 因此生产环境构建时也应保持较小的连接数。
+        max: process.env.NODE_ENV === 'development' ? 5 : 2,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 5000,
     });
