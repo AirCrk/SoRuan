@@ -85,7 +85,8 @@ export async function POST(request: NextRequest) {
                     'site_name', 'site_description', 'site_logo', 'banner_slides', 
                     'footer_copyright', 'footer_description', 'site_title', 
                     'contact_service_link',
-                    'product_sidebar_ad_image', 'product_sidebar_ad_link'
+                    'product_sidebar_ad_image', 'product_sidebar_ad_link',
+                    'google_adsense_code'
                 ];
 
                 for (const key of siteKeys) {

@@ -51,6 +51,7 @@ export default function SettingsPage() {
         footer_copyright: '',
         footer_description: '',
         contact_service_link: '',
+        google_adsense_code: '',
     });
 
     // 广告轮播图
@@ -106,6 +107,7 @@ export default function SettingsPage() {
                     footer_copyright: settings.footer_copyright || '',
                     footer_description: settings.footer_description || '',
                     contact_service_link: settings.contact_service_link || '',
+                    google_adsense_code: settings.google_adsense_code || '',
                 });
 
                 if (settings.banner_slides) {
@@ -552,6 +554,20 @@ export default function SettingsPage() {
                                         className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                     <p className="text-xs text-gray-500 mt-1">用户点击顶部“联系客服”按钮时跳转的链接（支持企业微信客服链接等）</p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Google AdSense 发布商 ID
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={siteConfig.google_adsense_code}
+                                        onChange={(e) => setSiteConfig(prev => ({ ...prev, google_adsense_code: e.target.value }))}
+                                        placeholder="ca-pub-xxxxxxxxxxxxxxxx"
+                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">请输入 Google AdSense 的发布商 ID（Client ID），通常以 ca-pub- 开头</p>
                                 </div>
 
                                 <button

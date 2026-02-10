@@ -44,4 +44,5 @@ export interface SiteConfig {
   contact_service_link?: string;
   product_sidebar_ad_image?: string;
   product_sidebar_ad_link?: string;
+  google_adsense_code?: string;
 }

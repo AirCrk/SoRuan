@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import prisma from "@/lib/prisma";
@@ -34,11 +35,16 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const adConfig = await prisma.siteConfig.findFirst({
+    where: { key: "google_adsense_code" }
+  });
+  const adId = adConfig?.value;
+
   return (
     <html lang="zh-CN">
       <body
@@ -48,6 +54,14 @@ export default function RootLayout({
         <Providers>
           {children}
         </Providers>
+        {adId && (
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adId}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
       </body>
     </html>
   );
