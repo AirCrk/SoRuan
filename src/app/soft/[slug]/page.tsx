@@ -100,9 +100,10 @@ export default async function ProductPage({ params }: Props) {
                                 href={configMap.contact_service_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-4 py-2 bg-[#0e7490] hover:bg-[#0891b2] text-white text-sm font-medium rounded-md transition-colors shadow-sm"
+                                className="px-3 py-1.5 md:px-4 md:py-2 bg-[#0e7490] hover:bg-[#0891b2] text-white text-xs md:text-sm font-medium rounded-md transition-colors shadow-sm whitespace-nowrap"
                             >
-                                联系我们
+                                <span className="hidden md:inline">联系我们</span>
+                                <span className="md:hidden">客服</span>
                             </a>
                         )}
                     </div>
@@ -112,7 +113,7 @@ export default async function ProductPage({ params }: Props) {
             <main className="w-full px-4 py-8 md:px-8 max-w-7xl mx-auto">
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
                     {/* Left Column: Product Info & Related */}
-                    <div className="flex-1 min-w-0 max-w-5xl">
+                    <div className="w-full flex-1 min-w-0 max-w-5xl">
                         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                             {/* 商品头部信息 */}
                             <div className="p-6 md:p-8 lg:p-10 flex flex-col md:flex-row gap-6 md:gap-8 lg:gap-12">
