@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import prisma from "@/lib/prisma";
@@ -47,6 +46,15 @@ export default async function RootLayout({
 
   return (
     <html lang="zh-CN">
+      <head>
+        {adId && (
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adId}`}
+            crossOrigin="anonymous"
+          ></script>
+        )}
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
@@ -54,14 +62,6 @@ export default async function RootLayout({
         <Providers>
           {children}
         </Providers>
-        {adId && (
-          <Script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adId}`}
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
-        )}
       </body>
     </html>
   );
