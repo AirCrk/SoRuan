@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, Suspense } from 'react';
-import { Search, Monitor, Apple, Smartphone, Globe, Home, Star, LayoutGrid, Terminal } from 'lucide-react';
+import { Search, Monitor, Apple, Smartphone, Globe, Home, Star, LayoutGrid, Terminal, Chrome, AppWindow } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -10,13 +10,16 @@ import CategoryNav from '@/components/CategoryNav';
 import type { Product, BannerSlide, FriendLink, SiteConfig } from '@/types';
 
 const platformIcons: Record<string, React.ReactNode> = {
-  windows: <Monitor className="w-4 h-4" />,
-  mac: <Monitor className="w-4 h-4" />, // Mac usually shares Monitor or specific
+  windows: <LayoutGrid className="w-4 h-4" />,
+  mac: <AppWindow className="w-4 h-4" />, 
+  macos: <AppWindow className="w-4 h-4" />,
   apple: <Apple className="w-4 h-4" />,
   android: <Smartphone className="w-4 h-4" />,
   ios: <Apple className="w-4 h-4" />,
   linux: <Terminal className="w-4 h-4" />,
   web: <Globe className="w-4 h-4" />,
+  'chrome 扩展': <Chrome className="w-4 h-4" />,
+  'chrome': <Chrome className="w-4 h-4" />,
 };
 
 interface HomePageClientProps {
@@ -272,7 +275,7 @@ function HomePageContent({
 
                 {/* 购买按钮 */}
                 <button className="w-full mt-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors opacity-0 group-hover:opacity-100">
-                  立即购买
+                  获取正版
                 </button>
               </div>
             ))}

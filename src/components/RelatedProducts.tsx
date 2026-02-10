@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Monitor, Apple, Smartphone, Globe } from 'lucide-react';
+import { Monitor, Apple, Smartphone, Globe, LayoutGrid, AppWindow, Terminal, Chrome } from 'lucide-react';
 import prisma from '@/lib/prisma';
 
 interface RelatedProductsProps {
@@ -8,12 +8,16 @@ interface RelatedProductsProps {
 }
 
 const platformIcons: Record<string, React.ReactNode> = {
-  windows: <Monitor className="w-4 h-4" />,
-  mac: <Monitor className="w-4 h-4" />,
+  windows: <LayoutGrid className="w-4 h-4" />,
+  mac: <AppWindow className="w-4 h-4" />,
+  macos: <AppWindow className="w-4 h-4" />,
   apple: <Apple className="w-4 h-4" />,
   android: <Smartphone className="w-4 h-4" />,
   ios: <Apple className="w-4 h-4" />,
+  linux: <Terminal className="w-4 h-4" />,
   web: <Globe className="w-4 h-4" />,
+  'chrome 扩展': <Chrome className="w-4 h-4" />,
+  'chrome': <Chrome className="w-4 h-4" />,
 };
 
 export default async function RelatedProducts({ currentProductId }: RelatedProductsProps) {

@@ -2,16 +2,17 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Monitor, Apple, Smartphone, Globe, Home, Terminal } from 'lucide-react';
+import { Monitor, Apple, Smartphone, Globe, Home, Terminal, Chrome, LayoutGrid, AppWindow } from 'lucide-react';
 
 const navCategories = [
   { id: '全部', label: '首页', icon: Home, value: null },
-  { id: 'Windows', label: 'Windows', icon: Monitor, value: 'Windows' },
-  { id: 'Mac', label: 'macOS', icon: Apple, value: 'Mac' },
-  { id: 'iOS', label: 'iOS', icon: Apple, value: 'iOS' },
-  { id: 'Android', label: 'Android', icon: Smartphone, value: 'Android' },
+  { id: 'Windows', label: 'Windows', icon: LayoutGrid, value: 'Windows' },
+  { id: 'macOS', label: 'macOS', icon: AppWindow, value: 'macOS' },
   { id: 'Linux', label: 'Linux', icon: Terminal, value: 'Linux' },
   { id: 'Web', label: 'Web', icon: Globe, value: 'Web' },
+  { id: 'iOS', label: 'iOS', icon: Apple, value: 'iOS' },
+  { id: 'Android', label: 'Android', icon: Smartphone, value: 'Android' },
+  { id: 'Chrome', label: 'Chrome 扩展', icon: Chrome, value: 'Chrome' },
 ];
 
 export default function CategoryNav() {

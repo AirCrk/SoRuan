@@ -2,7 +2,7 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Monitor, Apple, Smartphone, ShoppingCart, ExternalLink, Download, Terminal } from 'lucide-react';
+import { ArrowLeft, Monitor, Apple, Smartphone, ShoppingCart, ExternalLink, Download, Terminal, Chrome, LayoutGrid, AppWindow } from 'lucide-react';
 import prisma from '@/lib/prisma';
 import type { Metadata } from 'next';
 import ProductGallery from '@/components/ProductGallery';
@@ -79,10 +79,14 @@ export default async function ProductPage({ params }: Props) {
     // 平台图标映射
     const getPlatformIcon = (name: string) => {
         const key = name.toLowerCase();
-        if (key.includes('win')) return <Monitor className="w-4 h-4" />;
-        if (key.includes('mac') || key.includes('apple') || key.includes('ios')) return <Apple className="w-4 h-4" />;
+        if (key.includes('win')) return <LayoutGrid className="w-4 h-4" />;
+        if (key.includes('mac') || key.includes('apple') || key.includes('ios')) {
+             if (key.includes('ios') || key.includes('iphone') || key.includes('ipad')) return <Apple className="w-4 h-4" />;
+             return <AppWindow className="w-4 h-4" />;
+        }
         if (key.includes('android')) return <Smartphone className="w-4 h-4" />;
         if (key.includes('linux')) return <Terminal className="w-4 h-4" />;
+        if (key.includes('chrome')) return <Chrome className="w-4 h-4" />;
         return <Monitor className="w-4 h-4" />;
     };
 
@@ -205,7 +209,7 @@ export default async function ProductPage({ params }: Props) {
                                             className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm md:text-base lg:text-lg font-bold px-4 py-2.5 lg:px-8 lg:py-3.5 rounded-xl shadow-lg shadow-blue-200 transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
                                         >
                                             <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5" />
-                                            购买正版
+                                            优惠购买
                                         </a>
                                     </div>
                                 </div>
