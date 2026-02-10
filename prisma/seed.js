@@ -56,6 +56,19 @@ async function main() {
     }
     console.log('✓ 渠道数据已创建');
 
+    // 站点配置
+    const siteConfigs = [
+        { key: 'site_favicon', value: 'https://shangcheng20250927.oss-cn-beijing.aliyuncs.com/upload/158/20260126/favicon.ico' }
+    ];
+    for (const config of siteConfigs) {
+        await prisma.siteConfig.upsert({
+            where: { key: config.key },
+            update: { value: config.value },
+            create: { key: config.key, value: config.value },
+        });
+    }
+    console.log('✓ 站点配置已创建');
+
     // 获取平台ID
     const allPlatforms = await prisma.platform.findMany();
     const platformMap = {};
