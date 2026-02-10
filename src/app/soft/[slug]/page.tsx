@@ -105,7 +105,7 @@ export default async function ProductPage({ params }: Props) {
                                 href={configMap.contact_service_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-3 py-1.5 md:px-4 md:py-2 bg-[#0e7490] hover:bg-[#0891b2] text-white text-xs md:text-sm font-medium rounded-md transition-colors shadow-sm whitespace-nowrap"
+                                className="px-3 py-1.5 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm font-medium rounded-md transition-colors shadow-sm whitespace-nowrap"
                             >
                                 <span className="hidden md:inline">联系我们</span>
                                 <span className="md:hidden">客服</span>

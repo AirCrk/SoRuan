@@ -134,7 +134,7 @@ function HomePageContent({
                 />
               </div>
             ) : (
-              <div className="w-8 h-8 bg-gradient-to-br from-[#0e7490] to-[#0891b2] rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">
                   {siteConfig.site_name.charAt(0)}
                 </span>
@@ -152,11 +152,11 @@ function HomePageContent({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="搜索..."
-                  className="w-full pl-3 md:pl-4 pr-8 md:pr-10 py-1.5 md:py-2 bg-gray-100 border-none rounded-md text-sm text-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-[#0e7490]/20 focus:bg-white transition-all"
+                  className="w-full pl-3 md:pl-4 pr-8 md:pr-10 py-1.5 md:py-2 bg-gray-100 border-none rounded-md text-sm text-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-blue-600/20 focus:bg-white transition-all"
                 />
                 <button
                   type="submit"
-                  className="absolute right-0 top-0 h-full px-2 md:px-3 text-gray-400 hover:text-[#0e7490] transition-colors"
+                  className="absolute right-0 top-0 h-full px-2 md:px-3 text-gray-400 hover:text-blue-600 transition-colors"
                 >
                   <Search className="w-4 h-4" />
                 </button>
@@ -169,7 +169,7 @@ function HomePageContent({
                 href={siteConfig.contact_service_link}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-shrink-0 px-3 py-1.5 md:px-4 md:py-2 bg-[#0e7490] hover:bg-[#0891b2] text-white text-xs md:text-sm font-medium rounded-md transition-colors shadow-sm whitespace-nowrap"
+                className="flex-shrink-0 px-3 py-1.5 md:px-4 md:py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm font-medium rounded-md transition-colors shadow-sm whitespace-nowrap"
               >
                 <span className="hidden md:inline">联系我们</span>
                 <span className="md:hidden">客服</span>

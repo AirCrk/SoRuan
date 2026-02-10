@@ -32,7 +32,7 @@ export default function CategoryNav() {
             className={`
               flex items-center gap-2 px-4 py-3 rounded-t-lg text-sm font-medium transition-all
               ${isActive 
-                ? 'bg-slate-800 text-white shadow-md translate-y-[1px]' 
+                ? 'bg-blue-600 text-white shadow-md translate-y-[1px]' 
                 : 'text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm'
               }
             `}
