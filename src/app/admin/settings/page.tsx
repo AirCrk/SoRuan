@@ -50,6 +50,7 @@ export default function SettingsPage() {
         site_logo: '',
         footer_copyright: '',
         footer_description: '',
+        contact_service_link: '',
     });
 
     // 广告轮播图
@@ -104,6 +105,7 @@ export default function SettingsPage() {
                     site_logo: settings.site_logo || '',
                     footer_copyright: settings.footer_copyright || '',
                     footer_description: settings.footer_description || '',
+                    contact_service_link: settings.contact_service_link || '',
                 });
 
                 if (settings.banner_slides) {
@@ -536,6 +538,20 @@ export default function SettingsPage() {
                                         placeholder="本站所有软件均为正版授权，点击购买即跳转至官方或授权渠道"
                                         className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        联系客服链接 (URL)
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={siteConfig.contact_service_link}
+                                        onChange={(e) => setSiteConfig(prev => ({ ...prev, contact_service_link: e.target.value }))}
+                                        placeholder="https://work.weixin.qq.com/..."
+                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">用户点击顶部“联系客服”按钮时跳转的链接（支持企业微信客服链接等）</p>
                                 </div>
 
                                 <button

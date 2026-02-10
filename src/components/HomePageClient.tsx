@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, Suspense } from 'react';
 import { Search, Monitor, Apple, Smartphone, Globe, Home, Star, LayoutGrid } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useSearchParams, useRouter } from 'next/navigation';
 import BannerCarousel from '@/components/BannerCarousel';
+import CategoryNav from '@/components/CategoryNav';
 import type { Product, BannerSlide, FriendLink, SiteConfig } from '@/types';
 
 const platformIcons: Record<string, React.ReactNode> = {
@@ -15,15 +17,6 @@ const platformIcons: Record<string, React.ReactNode> = {
   ios: <Apple className="w-4 h-4" />,
   web: <Globe className="w-4 h-4" />,
 };
-
-const navCategories = [
-  { id: '全部', label: '首页', icon: Home },
-  { id: 'Windows', label: 'Windows', icon: Monitor },
-  { id: 'Mac', label: 'macOS', icon: Apple }, // Using Apple icon for macOS to match style
-  { id: 'iOS', label: 'iOS', icon: Apple },
-  { id: 'Android', label: 'Android', icon: Smartphone },
-  { id: 'Web', label: 'Web', icon: Globe },
-];
 
 interface HomePageClientProps {
   initialProducts: Product[];
@@ -38,19 +31,40 @@ export default function HomePageClient({
   initialFriendLinks,
   siteConfig,
 }: HomePageClientProps) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomePageContent
+        initialProducts={initialProducts}
+        initialBannerSlides={initialBannerSlides}
+        initialFriendLinks={initialFriendLinks}
+        siteConfig={siteConfig}
+      />
+    </Suspense>
+  );
+}
+
+function HomePageContent({
+  initialProducts,
+  initialBannerSlides,
+  initialFriendLinks,
+  siteConfig,
+}: HomePageClientProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState('全部');
+  
+  const currentPlatform = searchParams.get('platform');
+  const activeCategory = currentPlatform || '全部';
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
       if (searchQuery) params.append('search', searchQuery);
-      if (activeCategory !== '全部') {
-         // Map UI category to API platform param if needed, or backend handles it
-         params.append('platform', activeCategory);
+      if (currentPlatform) {
+         params.append('platform', currentPlatform);
       }
 
       const res = await fetch(`/api/products?${params}`);
@@ -63,28 +77,37 @@ export default function HomePageClient({
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, activeCategory]);
+  }, [searchQuery, currentPlatform]);
 
-  // ... (effect logic remains same)
-  
+  // Handle URL change
+  useEffect(() => {
+    // If we have params, we should fetch
+    if (currentPlatform || searchQuery) {
+        fetchProducts();
+    } else {
+        // Reset to initial if back to home (no params)
+        setProducts(initialProducts);
+    }
+  }, [currentPlatform, fetchProducts, initialProducts, searchQuery]); 
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     fetchProducts();
   };
 
-  const handleCategoryChange = (catId: string) => {
-    setActiveCategory(catId);
-  };
-  
   const [isFirstMount, setIsFirstMount] = useState(true);
 
   useEffect(() => {
     if (isFirstMount) {
       setIsFirstMount(false);
+      // If we loaded with a platform param, we need to fetch immediately because server data was likely "All"
+      if (currentPlatform) {
+          fetchProducts();
+      }
       return;
     }
-    fetchProducts();
-  }, [activeCategory, fetchProducts, isFirstMount]);
+    // Subsequent updates handled by the other useEffect or explicit calls
+  }, [isFirstMount, currentPlatform, fetchProducts]);
 
   const handleProductClick = (product: Product) => {
     const targetSlug = product.slug || product.id;
@@ -97,7 +120,7 @@ export default function HomePageClient({
       <header className="bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
+          <Link href="/" className="flex items-center gap-3">
             {siteConfig.site_logo ? (
               <div className="relative w-8 h-8 rounded-lg overflow-hidden">
                 <Image
@@ -117,24 +140,38 @@ export default function HomePageClient({
             <span className="text-xl font-bold text-gray-900">{siteConfig.site_name}</span>
           </Link>
 
-          {/* Search Box (Right aligned) */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-sm">
-            <div className="relative group">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="输入关键词搜索..."
-                className="w-full pl-4 pr-10 py-2 bg-gray-100 border-none rounded-md text-sm text-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-[#0e7490]/20 focus:bg-white transition-all"
-              />
-              <button
-                type="submit"
-                className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-[#0e7490] transition-colors"
+          <div className="flex items-center gap-4">
+            {/* Search Box */}
+            <form onSubmit={handleSearch} className="w-64 lg:w-80">
+              <div className="relative group">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="输入关键词搜索..."
+                  className="w-full pl-4 pr-10 py-2 bg-gray-100 border-none rounded-md text-sm text-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-[#0e7490]/20 focus:bg-white transition-all"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-[#0e7490] transition-colors"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
+              </div>
+            </form>
+
+            {/* Contact Button */}
+            {siteConfig.contact_service_link && (
+              <a
+                href={siteConfig.contact_service_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-shrink-0 px-4 py-2 bg-[#0e7490] hover:bg-[#0891b2] text-white text-sm font-medium rounded-md transition-colors shadow-sm"
               >
-                <Search className="w-4 h-4" />
-              </button>
-            </div>
-          </form>
+                联系我们
+              </a>
+            )}
+          </div>
         </div>
       </header>
 
@@ -158,28 +195,7 @@ export default function HomePageClient({
 
           {/* Navigation Bar (Bottom of Hero) */}
           <div className="px-4 pb-1">
-            <div className="flex flex-wrap items-center gap-1">
-              {navCategories.map((cat) => {
-                 const Icon = cat.icon;
-                 const isActive = activeCategory === cat.id;
-                 return (
-                  <button
-                    key={cat.id}
-                    onClick={() => handleCategoryChange(cat.id)}
-                    className={`
-                      flex items-center gap-2 px-4 py-3 rounded-t-lg text-sm font-medium transition-all
-                      ${isActive 
-                        ? 'bg-slate-800 text-white shadow-md translate-y-[1px]' 
-                        : 'text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm'
-                      }
-                    `}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {cat.label}
-                  </button>
-                 );
-              })}
-            </div>
+            <CategoryNav />
           </div>
         </div>
       </div>

@@ -19,7 +19,7 @@ async function getInitialData() {
   const siteConfigs = await prisma.siteConfig.findMany({
     where: {
       key: {
-        in: ['site_name', 'site_logo', 'footer_copyright', 'footer_description', 'banner_slides']
+        in: ['site_name', 'site_logo', 'footer_copyright', 'footer_description', 'banner_slides', 'contact_service_link']
       }
     }
   });
@@ -46,6 +46,7 @@ export default async function HomePage() {
     site_logo: configMap.site_logo || '',
     footer_copyright: configMap.footer_copyright || '',
     footer_description: configMap.footer_description || '',
+    contact_service_link: configMap.contact_service_link || '',
   };
 
   // Parse Banner Slides

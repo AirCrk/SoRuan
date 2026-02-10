@@ -36,4 +36,5 @@ export interface SiteConfig {
   site_logo: string;
   footer_copyright: string;
   footer_description: string;
+  contact_service_link?: string;
 }

@@ -1,0 +1,45 @@
+'use client';
+
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { Monitor, Apple, Smartphone, Globe, Home } from 'lucide-react';
+
+const navCategories = [
+  { id: '全部', label: '首页', icon: Home, value: null },
+  { id: 'Windows', label: 'Windows', icon: Monitor, value: 'Windows' },
+  { id: 'Mac', label: 'macOS', icon: Apple, value: 'Mac' },
+  { id: 'iOS', label: 'iOS', icon: Apple, value: 'iOS' },
+  { id: 'Android', label: 'Android', icon: Smartphone, value: 'Android' },
+  { id: 'Web', label: 'Web', icon: Globe, value: 'Web' },
+];
+
+export default function CategoryNav() {
+  const searchParams = useSearchParams();
+  const currentPlatform = searchParams.get('platform');
+
+  return (
+    <div className="flex flex-wrap items-center gap-1">
+      {navCategories.map((cat) => {
+        const Icon = cat.icon;
+        const isActive = cat.value === currentPlatform || (cat.value === null && !currentPlatform);
+        
+        return (
+          <Link
+            key={cat.id}
+            href={cat.value ? `/?platform=${cat.value}` : '/'}
+            className={`
+              flex items-center gap-2 px-4 py-3 rounded-t-lg text-sm font-medium transition-all
+              ${isActive 
+                ? 'bg-slate-800 text-white shadow-md translate-y-[1px]' 
+                : 'text-slate-600 hover:bg-white hover:text-slate-900 hover:shadow-sm'
+              }
+            `}
+          >
+            <Icon className="w-4 h-4" />
+            {cat.label}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
