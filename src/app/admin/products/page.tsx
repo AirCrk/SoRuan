@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
     ArrowLeft, Edit, Trash2, Plus, Loader2, Filter, Search,
-    ChevronLeft, ChevronRight
+    ChevronLeft, ChevronRight, RotateCw
 } from 'lucide-react';
 import Image from 'next/image';
 import AdminSidebar from '@/components/AdminSidebar';
@@ -71,7 +71,14 @@ export default function AdminProductsPage() {
                 params.append('search', searchQuery);
             }
 
-            const res = await fetch(`/api/admin/products?${params}`);
+            // 添加时间戳防止缓存
+            const res = await fetch(`/api/admin/products?${params}&t=${Date.now()}`, {
+                cache: 'no-store',
+                headers: {
+                    'Pragma': 'no-cache',
+                    'Cache-Control': 'no-cache'
+                }
+            });
             const data = await res.json();
 
             if (data.success) {
@@ -160,6 +167,14 @@ export default function AdminProductsPage() {
                                     </option>
                                 ))}
                             </select>
+
+                            <button
+                                onClick={fetchProducts}
+                                className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                                title="刷新列表"
+                            >
+                                <RotateCw className="w-5 h-5" />
+                            </button>
 
                             {/* 添加按钮 */}
                             <Link
