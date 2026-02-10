@@ -109,7 +109,7 @@ export default async function ProductPage({ params }: Props) {
                 </div>
             </header>
 
-            <main className="w-full px-4 py-8 md:px-8 max-w-[1600px] mx-0">
+            <main className="w-full px-4 py-8 md:px-8 max-w-7xl mx-auto">
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
                     {/* Left Column: Product Info & Related */}
                     <div className="flex-1 min-w-0 max-w-5xl">
