@@ -263,11 +263,10 @@ function HomePageContent({
                 )}
 
                 {/* 价格 */}
-                <div className="flex items-center justify-center gap-2 mt-4">
-                  {product.originalPrice > product.salePrice && (
-                    <span className="price-original">¥{product.originalPrice}</span>
-                  )}
-                  <span className="price-sale">¥{product.salePrice}</span>
+                <div className="flex items-center justify-center gap-2 mt-auto pt-2">
+                  <span className="text-sm font-bold text-red-600">
+                    {product.salePriceText ? `¥${product.salePriceText}` : `¥${Number(product.salePrice).toFixed(2)}`}
+                  </span>
                 </div>
 
                 {/* 购买按钮 */}

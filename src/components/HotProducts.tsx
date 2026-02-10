@@ -15,6 +15,7 @@ export default async function HotProducts() {
       logo: true,
       coverImage: true,
       salePrice: true,
+      salePriceText: true,
       subtitle: true,
     }
   });
@@ -67,7 +68,9 @@ export default async function HotProducts() {
                 <span className="text-xs text-gray-500 line-clamp-1 flex-1 mr-2">
                     {product.subtitle || '暂无简介'}
                 </span>
-                <span className="text-red-600 font-bold text-sm">¥{Number(product.salePrice).toFixed(0)}</span>
+                <span className="text-red-600 font-bold text-sm">
+                  {product.salePriceText ? `¥${product.salePriceText}` : `¥${Number(product.salePrice).toFixed(0)}`}
+                </span>
               </div>
             </div>
           </Link>

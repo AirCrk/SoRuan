@@ -9,8 +9,12 @@ export interface Product {
   name: string;
   subtitle: string | null;
   originalPrice: number;
+  originalPriceText?: string | null;
   salePrice: number;
+  salePriceText?: string | null;
   cpsLink: string;
+  downloadUrl?: string | null;
+  officialSite?: string | null;
   coverImage: string | null;
   logo: string | null;
   slug: string | null;

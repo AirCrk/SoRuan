@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { name, subtitle, description, originalPrice, salePrice, cpsLink, downloadUrl, coverImage, logo, images, platformIds, channelId } = body;
+        const { name, subtitle, description, originalPrice, originalPriceText, salePrice, salePriceText, cpsLink, downloadUrl, officialSite, coverImage, logo, images, platformIds, channelId } = body;
         let { slug } = body;
 
         if (!name || !cpsLink) {
@@ -121,9 +121,12 @@ export async function POST(request: NextRequest) {
                 subtitle,
                 description,
                 originalPrice: parseFloat(originalPrice) || 0,
+                originalPriceText,
                 salePrice: parseFloat(salePrice) || 0,
+                salePriceText,
                 cpsLink,
                 downloadUrl,
+                officialSite,
                 coverImage: images && images.length > 0 ? images[0] : coverImage,
                 logo,
                 images: images || [],

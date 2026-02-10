@@ -20,7 +20,9 @@ interface Product {
     name: string;
     subtitle: string;
     originalPrice: number;
+    originalPriceText?: string | null;
     salePrice: number;
+    salePriceText?: string | null;
     coverImage: string;
     logo: string;
     isActive: boolean;
@@ -228,8 +230,12 @@ export default function AdminProductsPage() {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="text-sm">
-                                                        <div className="font-medium text-gray-900">¥{Number(product.salePrice).toFixed(2)}</div>
-                                                        <div className="text-gray-500 line-through text-xs">¥{Number(product.originalPrice).toFixed(2)}</div>
+                                                        <div className="font-medium text-gray-900">
+                                                            {product.salePriceText ? `¥${product.salePriceText}` : `¥${Number(product.salePrice).toFixed(2)}`}
+                                                        </div>
+                                                        <div className="text-gray-500 line-through text-xs">
+                                                            {product.originalPriceText ? `¥${product.originalPriceText}` : `¥${Number(product.originalPrice).toFixed(2)}`}
+                                                        </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

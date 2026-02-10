@@ -149,10 +149,22 @@ export default async function ProductPage({ params }: Props) {
                                     <div className="mt-auto w-full md:w-auto mb-6">
                                         <div className="flex flex-col items-center md:items-start">
                                             <div className="flex items-baseline gap-3">
-                                                <span className="text-4xl font-bold text-red-600">¥{Number(product.salePrice).toFixed(2)}</span>
-                                                <span className="text-lg text-gray-400 line-through">¥{Number(product.originalPrice).toFixed(2)}</span>
+                                                <span className="text-4xl font-bold text-red-600">
+                                                    {product.salePriceText ? (
+                                                        product.salePriceText.includes('~') ? `¥${product.salePriceText}` : `¥${product.salePriceText}`
+                                                    ) : (
+                                                        `¥${Number(product.salePrice).toFixed(2)}`
+                                                    )}
+                                                </span>
+                                                <span className="text-lg text-gray-400 line-through">
+                                                    {product.originalPriceText ? (
+                                                        `¥${product.originalPriceText}`
+                                                    ) : (
+                                                        `¥${Number(product.originalPrice).toFixed(2)}`
+                                                    )}
+                                                </span>
                                             </div>
-                                            {product.originalPrice > product.salePrice && (
+                                            {!product.salePriceText && !product.originalPriceText && product.originalPrice > product.salePrice && (
                                                 <div className="text-sm text-red-500 font-medium bg-red-50 px-2 py-0.5 rounded mt-2 inline-block">
                                                     {Math.round((1 - product.salePrice / product.originalPrice) * 100)}% OFF
                                                 </div>
@@ -161,6 +173,18 @@ export default async function ProductPage({ params }: Props) {
                                     </div>
 
                                     <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 lg:gap-4 w-full md:w-auto">
+                                        {product.officialSite && (
+                                            <a
+                                                href={product.officialSite}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex-1 flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-600 border-2 border-gray-100 hover:border-gray-200 text-sm md:text-base lg:text-lg font-bold px-4 py-2.5 lg:px-8 lg:py-3.5 rounded-xl transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
+                                            >
+                                                <ExternalLink className="w-4 h-4 lg:w-5 lg:h-5" />
+                                                访问官网
+                                            </a>
+                                        )}
+
                                         {product.downloadUrl && (
                                             <a
                                                 href={product.downloadUrl}

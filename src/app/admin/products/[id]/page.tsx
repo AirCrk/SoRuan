@@ -124,9 +124,12 @@ export default function ProductEditPage() {
         subtitle: '',
         description: '',
         originalPrice: '',
+        originalPriceText: '',
         salePrice: '',
+        salePriceText: '',
         cpsLink: '',
         downloadUrl: '',
+        officialSite: '',
         coverImage: '',
         logo: '',
         images: [] as string[],
@@ -171,9 +174,12 @@ export default function ProductEditPage() {
                     subtitle: product.subtitle || '',
                     description: product.description || '',
                     originalPrice: product.originalPrice?.toString() || '',
+                    originalPriceText: product.originalPriceText || '',
                     salePrice: product.salePrice?.toString() || '',
+                    salePriceText: product.salePriceText || '',
                     cpsLink: product.cpsLink || '',
                     downloadUrl: product.downloadUrl || '',
+                    officialSite: product.officialSite || '',
                     coverImage: product.coverImage || '',
                     logo: product.logo || '',
                     images: product.images || (product.coverImage ? [product.coverImage] : []),
@@ -405,58 +411,107 @@ export default function ProductEditPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                原价（元）
-                            </label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                value={formData.originalPrice}
-                                onChange={(e) => setFormData((prev) => ({ ...prev, originalPrice: e.target.value }))}
-                                placeholder="0.00"
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                    原价（数值）
+                                    <span className="text-xs text-gray-400 ml-2 font-normal">用于计算折扣</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={formData.originalPrice}
+                                    onChange={(e) => setFormData((prev) => ({ ...prev, originalPrice: e.target.value }))}
+                                    placeholder="0.00"
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                    原价（显示文本）
+                                    <span className="text-xs text-gray-400 ml-2 font-normal">可选，覆盖数值显示，支持范围如 "40~499"</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.originalPriceText}
+                                    onChange={(e) => setFormData((prev) => ({ ...prev, originalPriceText: e.target.value }))}
+                                    placeholder="如：40~499"
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                            </div>
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                促销价（元）
-                            </label>
-                            <input
-                                type="number"
-                                step="0.01"
-                                value={formData.salePrice}
-                                onChange={(e) => setFormData((prev) => ({ ...prev, salePrice: e.target.value }))}
-                                placeholder="0.00"
-                                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                    促销价（数值）
+                                    <span className="text-xs text-gray-400 ml-2 font-normal">用于排序和计算折扣</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={formData.salePrice}
+                                    onChange={(e) => setFormData((prev) => ({ ...prev, salePrice: e.target.value }))}
+                                    placeholder="0.00"
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                    促销价（显示文本）
+                                    <span className="text-xs text-gray-400 ml-2 font-normal">可选，覆盖数值显示，支持范围如 "40~499"</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.salePriceText}
+                                    onChange={(e) => setFormData((prev) => ({ ...prev, salePriceText: e.target.value }))}
+                                    placeholder="如：40~499"
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                            推广链接 (CPS) <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                            type="url"
-                            value={formData.cpsLink}
-                            onChange={(e) => setFormData((prev) => ({ ...prev, cpsLink: e.target.value }))}
-                            placeholder="https://..."
-                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
-                    </div>
+                </div>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                            下载地址 (可选)
-                        </label>
-                        <input
-                            type="url"
-                            value={formData.downloadUrl}
-                            onChange={(e) => setFormData((prev) => ({ ...prev, downloadUrl: e.target.value }))}
-                            placeholder="https://... (提供此链接将显示下载按钮)"
-                            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+                {/* 链接设置 */}
+                <div className="bg-white rounded-xl p-6 space-y-5">
+                    <h2 className="font-bold text-lg text-gray-900">推广与下载</h2>
+                    <div className="grid grid-cols-1 gap-5">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">CPS 推广链接 <span className="text-red-500">*</span></label>
+                            <input
+                                type="url"
+                                required
+                                value={formData.cpsLink}
+                                onChange={(e) => setFormData(prev => ({ ...prev, cpsLink: e.target.value }))}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                placeholder="https://..."
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">下载地址（可选）</label>
+                            <input
+                                type="url"
+                                value={formData.downloadUrl}
+                                onChange={(e) => setFormData(prev => ({ ...prev, downloadUrl: e.target.value }))}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                placeholder="https://..."
+                            />
+                            <p className="text-xs text-gray-500">如果提供，用户点击"下载试用"将跳转此链接</p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-gray-700">软件官网（可选）</label>
+                            <input
+                                type="url"
+                                value={formData.officialSite}
+                                onChange={(e) => setFormData(prev => ({ ...prev, officialSite: e.target.value }))}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                placeholder="https://..."
+                            />
+                            <p className="text-xs text-gray-500">如果提供，详情页将显示"访问官网"按钮</p>
+                        </div>
                     </div>
                 </div>
 

@@ -17,9 +17,12 @@ model Product {
   subtitle      String?  // 副标题/简介
   description   String?  @db.Text // 富文本详情
   originalPrice Float    // 原价
+  originalPriceText String? // 原价显示文本（支持范围）
   salePrice     Float    // 促销价
+  salePriceText String?  // 促销价显示文本（支持范围）
   cpsLink       String   // CPS 推广链接
   downloadUrl   String?  // 下载地址
+  officialSite  String?  // 软件官网
   coverImage    String?  // 封面图片 URL（阿里云 OSS）
   logo          String?  // 软件Logo URL (首页展示)
   images        String[] @default([]) // 更多封面图片

@@ -102,9 +102,13 @@ export default async function RelatedProducts({ currentProductId }: RelatedProdu
             )}
 
             <div className="mt-auto pt-2 flex items-baseline gap-2">
-               <span className="text-lg font-bold text-red-600">¥{Number(product.salePrice).toFixed(0)}</span>
-               {product.originalPrice > product.salePrice && (
-                   <span className="text-xs text-gray-400 line-through">¥{Number(product.originalPrice).toFixed(0)}</span>
+               <span className="text-lg font-bold text-red-600">
+                 {product.salePriceText ? `¥${product.salePriceText}` : `¥${Number(product.salePrice).toFixed(0)}`}
+               </span>
+               {(product.originalPriceText || product.originalPrice > product.salePrice) && (
+                   <span className="text-xs text-gray-400 line-through">
+                     {product.originalPriceText ? `¥${product.originalPriceText}` : `¥${Number(product.originalPrice).toFixed(0)}`}
+                   </span>
                )}
             </div>
           </Link>
