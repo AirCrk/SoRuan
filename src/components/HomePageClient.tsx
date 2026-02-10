@@ -276,7 +276,7 @@ function HomePageContent({
 
                 {/* 购买按钮 */}
                 <button className="w-full mt-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors opacity-0 group-hover:opacity-100">
-                  获取正版
+                  获取会员
                 </button>
               </div>
             ))}

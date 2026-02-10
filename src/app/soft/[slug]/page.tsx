@@ -210,7 +210,7 @@ export default async function ProductPage({ params }: Props) {
                                             className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm md:text-base lg:text-lg font-bold px-4 py-2.5 lg:px-8 lg:py-3.5 rounded-xl shadow-lg shadow-blue-200 transition-all hover:scale-105 active:scale-95 whitespace-nowrap"
                                         >
                                             <ShoppingCart className="w-4 h-4 lg:w-5 lg:h-5" />
-                                            优惠购买
+                                            优惠获取
                                         </a>
                                     </div>
                                 </div>
