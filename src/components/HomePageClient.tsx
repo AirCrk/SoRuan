@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, Suspense } from 'react';
-import { Search, Monitor, Apple, Smartphone, Globe, Home, Star, LayoutGrid } from 'lucide-react';
+import { Search, Monitor, Apple, Smartphone, Globe, Home, Star, LayoutGrid, Terminal } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -15,6 +15,7 @@ const platformIcons: Record<string, React.ReactNode> = {
   apple: <Apple className="w-4 h-4" />,
   android: <Smartphone className="w-4 h-4" />,
   ios: <Apple className="w-4 h-4" />,
+  linux: <Terminal className="w-4 h-4" />,
   web: <Globe className="w-4 h-4" />,
 };
 

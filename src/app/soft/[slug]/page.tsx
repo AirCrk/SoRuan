@@ -2,7 +2,7 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Monitor, Apple, Smartphone, ShoppingCart, ExternalLink, Download } from 'lucide-react';
+import { ArrowLeft, Monitor, Apple, Smartphone, ShoppingCart, ExternalLink, Download, Terminal } from 'lucide-react';
 import prisma from '@/lib/prisma';
 import type { Metadata } from 'next';
 import ProductGallery from '@/components/ProductGallery';
@@ -82,6 +82,7 @@ export default async function ProductPage({ params }: Props) {
         if (key.includes('win')) return <Monitor className="w-4 h-4" />;
         if (key.includes('mac') || key.includes('apple') || key.includes('ios')) return <Apple className="w-4 h-4" />;
         if (key.includes('android')) return <Smartphone className="w-4 h-4" />;
+        if (key.includes('linux')) return <Terminal className="w-4 h-4" />;
         return <Monitor className="w-4 h-4" />;
     };
 

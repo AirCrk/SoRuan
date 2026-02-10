@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Monitor, Apple, Smartphone, Globe, Home } from 'lucide-react';
+import { Monitor, Apple, Smartphone, Globe, Home, Terminal } from 'lucide-react';
 
 const navCategories = [
   { id: '全部', label: '首页', icon: Home, value: null },
@@ -10,6 +10,7 @@ const navCategories = [
   { id: 'Mac', label: 'macOS', icon: Apple, value: 'Mac' },
   { id: 'iOS', label: 'iOS', icon: Apple, value: 'iOS' },
   { id: 'Android', label: 'Android', icon: Smartphone, value: 'Android' },
+  { id: 'Linux', label: 'Linux', icon: Terminal, value: 'Linux' },
   { id: 'Web', label: 'Web', icon: Globe, value: 'Web' },
 ];
 

@@ -16,6 +16,7 @@ export interface Product {
   downloadUrl?: string | null;
   officialSite?: string | null;
   coverImage: string | null;
+  images?: string[];
   logo: string | null;
   slug: string | null;
   platforms: Platform[];
