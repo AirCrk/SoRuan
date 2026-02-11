@@ -8,32 +8,36 @@ export const revalidate = 60;
 
 async function getInitialData() {
   // Serial execution to avoid database connection exhaustion in constrained environments
-  const productsData = await prisma.product.findMany({
-    where: { isActive: true },
-    include: {
-      platforms: true,
-    },
-    orderBy: { createdAt: 'desc' },
-  });
-
-  const siteConfigs = await prisma.siteConfig.findMany({
-    where: {
-      key: {
-        in: ['site_name', 'site_logo', 'footer_copyright', 'footer_description', 'banner_slides', 'contact_service_link']
+  const [productsData, totalProducts, siteConfigs, friendLinksData] = await Promise.all([
+    prisma.product.findMany({
+      where: { isActive: true },
+      include: {
+        platforms: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 30, // Limit to 30 items (6 rows * 5 columns)
+    }),
+    prisma.product.count({
+      where: { isActive: true },
+    }),
+    prisma.siteConfig.findMany({
+      where: {
+        key: {
+          in: ['site_name', 'site_logo', 'footer_copyright', 'footer_description', 'banner_slides', 'contact_service_link']
+        }
       }
-    }
-  });
+    }),
+    prisma.friendLink.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: 'asc' },
+    })
+  ]);
 
-  const friendLinksData = await prisma.friendLink.findMany({
-    where: { isActive: true },
-    orderBy: { sortOrder: 'asc' },
-  });
-
-  return { productsData, siteConfigs, friendLinksData };
+  return { productsData, totalProducts, siteConfigs, friendLinksData };
 }
 
 export default async function HomePage() {
-  const { productsData, siteConfigs, friendLinksData } = await getInitialData();
+  const { productsData, totalProducts, siteConfigs, friendLinksData } = await getInitialData();
 
   // Transform Site Config
   const configMap: Record<string, string> = {};
@@ -91,6 +95,7 @@ export default async function HomePage() {
   return (
     <HomePageClient
       initialProducts={products}
+      totalProducts={totalProducts}
       initialBannerSlides={bannerSlides}
       initialFriendLinks={friendLinks}
       siteConfig={siteConfig}

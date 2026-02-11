@@ -26,6 +26,7 @@ const platformIcons: Record<string, React.ReactNode> = {
 
 interface HomePageClientProps {
   initialProducts: Product[];
+  totalProducts: number;
   initialBannerSlides: BannerSlide[];
   initialFriendLinks: FriendLink[];
   siteConfig: SiteConfig;
@@ -33,6 +34,7 @@ interface HomePageClientProps {
 
 export default function HomePageClient({
   initialProducts,
+  totalProducts,
   initialBannerSlides,
   initialFriendLinks,
   siteConfig,
@@ -41,6 +43,7 @@ export default function HomePageClient({
     <Suspense fallback={<div>Loading...</div>}>
       <HomePageContent
         initialProducts={initialProducts}
+        totalProducts={totalProducts}
         initialBannerSlides={initialBannerSlides}
         initialFriendLinks={initialFriendLinks}
         siteConfig={siteConfig}
@@ -51,6 +54,7 @@ export default function HomePageClient({
 
 function HomePageContent({
   initialProducts,
+  totalProducts,
   initialBannerSlides,
   initialFriendLinks,
   siteConfig,
@@ -60,11 +64,14 @@ function HomePageContent({
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [total, setTotal] = useState(totalProducts);
+  const pageSize = 30; // 每页30个商品
   
   const currentPlatform = searchParams.get('platform');
   const activeCategory = currentPlatform || '全部';
 
-  const fetchProducts = useCallback(async () => {
+  const fetchProducts = useCallback(async (page: number) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -72,11 +79,14 @@ function HomePageContent({
       if (currentPlatform) {
          params.append('platform', currentPlatform);
       }
+      params.append('page', page.toString());
+      params.append('pageSize', pageSize.toString());
 
       const res = await fetch(`/api/products?${params}`);
       const data = await res.json();
       if (data.success) {
         setProducts(data.data);
+        setTotal(data.pagination.total);
       }
     } catch (error) {
       console.error('获取商品失败:', error);
@@ -85,20 +95,34 @@ function HomePageContent({
     }
   }, [searchQuery, currentPlatform]);
 
-  // Handle URL change
+  // 重置页码
   useEffect(() => {
-    // If we have params, we should fetch
-    if (currentPlatform || searchQuery) {
-        fetchProducts();
-    } else {
-        // Reset to initial if back to home (no params)
+    setCurrentPage(1);
+  }, [currentPlatform, searchQuery]);
+
+  // Handle data fetching
+  useEffect(() => {
+    const isInitialPage = currentPage === 1 && !currentPlatform && !searchQuery;
+    
+    if (isInitialPage) {
         setProducts(initialProducts);
+        setTotal(totalProducts);
+    } else {
+        fetchProducts(currentPage);
     }
-  }, [currentPlatform, fetchProducts, initialProducts, searchQuery]); 
+  }, [currentPage, currentPlatform, searchQuery, fetchProducts, initialProducts, totalProducts]); 
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchProducts();
+    // 触发 useEffect 里的 fetchProducts
+  };
+  
+  const totalPages = Math.ceil(total / pageSize);
+
+  const handlePageChange = (page: number) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const [isFirstMount, setIsFirstMount] = useState(true);
@@ -108,7 +132,7 @@ function HomePageContent({
       setIsFirstMount(false);
       // If we loaded with a platform param, we need to fetch immediately because server data was likely "All"
       if (currentPlatform) {
-          fetchProducts();
+          fetchProducts(1);
       }
       return;
     }
@@ -218,6 +242,7 @@ function HomePageContent({
             <p className="text-gray-500">暂无商品</p>
           </div>
         ) : (
+          <>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-6">
             {products.map((product) => (
               <div
@@ -282,6 +307,31 @@ function HomePageContent({
               </div>
             ))}
           </div>
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-8 py-4">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                上一页
+              </button>
+              
+              <span className="text-sm text-gray-600 px-2 font-medium">
+                第 {currentPage} / {totalPages} 页
+              </span>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                下一页
+              </button>
+            </div>
+          )}
+          </>
         )}
       </main>
 
